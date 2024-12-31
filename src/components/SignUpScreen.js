@@ -34,9 +34,9 @@ const SignUpScreen = ({ navigation }) => {
       Alert.alert('Error', 'Please enter a valid email address.');
       return false;
     }
-    const phoneRegex = /^[0-9]{10}$/;
+    const phoneRegex = /^[+91]{3}[0-9]{10}$/;  // +91 format for phone validation
     if (!phoneRegex.test(phone)) {
-      Alert.alert('Error', 'Please enter a valid phone number.');
+      Alert.alert('Error', 'Please enter a valid phone number with country code +91.');
       return false;
     }
     if (password.length < 6) {
@@ -117,7 +117,7 @@ const SignUpScreen = ({ navigation }) => {
       <TextInput
         value={phone}
         onChangeText={setPhone}
-        placeholder="Phone Number"
+        placeholder="Phone Number (+91)"
         keyboardType="phone-pad"
         style={{ padding: 10, borderWidth: 1, marginBottom: 10, borderRadius: 5 }}
       />
@@ -127,12 +127,16 @@ const SignUpScreen = ({ navigation }) => {
         placeholder="Date of Birth (YYYY-MM-DD)"
         style={{ padding: 10, borderWidth: 1, marginBottom: 10, borderRadius: 5 }}
       />
-      <TextInput
-        value={gender}
-        onChangeText={setGender}
-        placeholder="Gender"
-        style={{ padding: 10, borderWidth: 1, marginBottom: 10, borderRadius: 5 }}
-      />
+      <Picker
+        selectedValue={gender}
+        onValueChange={(value) => setGender(value)}
+        style={{ height: 50, marginBottom: 10 }}
+      >
+        <Picker.Item label="Select Gender" value="" />
+        <Picker.Item label="Male" value="male" />
+        <Picker.Item label="Female" value="female" />
+        <Picker.Item label="Other" value="other" />
+      </Picker>
       <TextInput
         value={password}
         onChangeText={setPassword}
