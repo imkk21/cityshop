@@ -15,7 +15,7 @@ const LoginScreen = ({ navigation }) => {
   useEffect(() => {
     GoogleSignin.configure({
       scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-      webClientId: '488144373941-m9qpl00hlkl9h3uu7pv2ppp08194qteb.apps.googleusercontent.com', // Replace with your actual Web Client ID
+      webClientId: '488144373941-m9qpl00hlkl9h3uu7pv2ppp08194qteb.apps.googleusercontent.com',
     });
   }, []);
 
@@ -33,7 +33,6 @@ const LoginScreen = ({ navigation }) => {
     } else {
       Alert.alert('Success', 'Login successful!');
 
-      // Fetch the user profile details from the 'users' table using the authenticated user id
       const { data: userData, error: dbError } = await supabase
         .from('users')
         .select('*')
@@ -43,7 +42,6 @@ const LoginScreen = ({ navigation }) => {
       if (dbError) {
         Alert.alert('Error', dbError.message);
       } else {
-        // Pass the fetched user data to the Profile screen
         navigation.navigate('Profile', { user: userData });
       }
     }
@@ -65,8 +63,6 @@ const LoginScreen = ({ navigation }) => {
           console.error('Supabase sign-in error:', error.message);
           Alert.alert('Error', 'An error occurred during Google sign-in.');
         } else {
-          console.log('Google sign-in successful:', data);
-          // Fetch the user profile data after Google sign-in
           const { data: userData, error: dbError } = await supabase
             .from('users')
             .select('*')
@@ -76,7 +72,6 @@ const LoginScreen = ({ navigation }) => {
           if (dbError) {
             Alert.alert('Error', dbError.message);
           } else {
-            // Navigate to Profile screen after successful sign-in
             navigation.navigate('Profile', { user: userData });
           }
         }
@@ -100,8 +95,6 @@ const LoginScreen = ({ navigation }) => {
   return (
     <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
       <Text style={{ fontSize: 24, textAlign: 'center', marginBottom: 20 }}>Login</Text>
-
-      {/* Email/Password Login */}
       <TextInput
         value={email}
         onChangeText={setEmail}
@@ -118,12 +111,18 @@ const LoginScreen = ({ navigation }) => {
       />
       <Button title={loading ? 'Loading...' : 'Login'} onPress={handleLogin} />
 
-      {/* Google Sign-In Button */}
       <GoogleSigninButton
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
         onPress={handleGoogleSignIn}
       />
+
+      <Text
+        onPress={() => navigation.navigate('ForgotPassword')}
+        style={{ marginTop: 10, color: 'blue', textAlign: 'center' }}
+      >
+        Forgot Password?
+      </Text>
 
       <Text
         onPress={() => navigation.navigate('SignUp')}

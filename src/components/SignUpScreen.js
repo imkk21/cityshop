@@ -19,30 +19,68 @@ const SignUpScreen = ({ navigation }) => {
   const [city, setCity] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false); // Password visibility state
+
+  const checkPasswordStrength = (password) => {
+    const strengthCriteria = [
+      { regex: /(?=.*[a-z])/, label: 'Lowercase letter' },
+      { regex: /(?=.*[A-Z])/, label: 'Uppercase letter' },
+      { regex: /(?=.*\d)/, label: 'Number' },
+      { regex: /(?=.*[@$!%*?&])/ , label: 'Special character' },
+      { regex: /.{8,}/, label: 'At least 8 characters' },
+    ];
+    const matchedCriteria = strengthCriteria.filter(criteria => criteria.regex.test(password));
+
+    if (matchedCriteria.length < 3) {
+      setPasswordStrength('Weak');
+    } else if (matchedCriteria.length === 3 || matchedCriteria.length === 4) {
+      setPasswordStrength('Moderate');
+    } else {
+      setPasswordStrength('Strong');
+    }
+  };
 
   const validateForm = () => {
     if (!firstName || !lastName || !email || !phone || !dob || !gender || !country || !state || !city) {
       Alert.alert('Error', 'Please fill in all the fields.');
       return false;
     }
+
     if (!termsAccepted) {
       Alert.alert('Error', 'You must accept the terms and conditions to proceed.');
       return false;
     }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert('Error', 'Please enter a valid email address.');
       return false;
     }
-    const phoneRegex = /^[+91]{3}[0-9]{10}$/;  // +91 format for phone validation
-    if (!phoneRegex.test(phone)) {
+
+    const phoneRegex = /^[+91]{3}[0-9]{10}$/; // +91 format for phone validation
+    if (phone.length !== 13 || !phoneRegex.test(phone)) {
       Alert.alert('Error', 'Please enter a valid phone number with country code +91.');
       return false;
     }
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters.');
+
+    if (passwordStrength === 'Weak') {
+      Alert.alert('Error', 'Password is too weak. It should contain at least one uppercase letter, one number, and one special character.');
       return false;
     }
+
+    const today = new Date();
+    const dobDate = new Date(dob);
+    if (dobDate > today) {
+      Alert.alert('Error', 'Date of birth cannot be in the future.');
+      return false;
+    }
+
+    if (!country || !state || !city) {
+      Alert.alert('Error', 'Please select a valid country, state, and city.');
+      return false;
+    }
+
     return true;
   };
 
@@ -52,6 +90,25 @@ const SignUpScreen = ({ navigation }) => {
     }
 
     setLoading(true);
+
+    // Check if the phone number already exists in the database
+    const { data: existingUser, error: phoneError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('phone', phone)
+      .single();
+
+    if (phoneError && phoneError.code !== 'PGRST116') {
+      Alert.alert('Error', phoneError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (existingUser) {
+      Alert.alert('Error', 'Phone number is already registered.');
+      setLoading(false);
+      return;
+    }
 
     // Sign up the user with Supabase Auth
     const { data, error } = await supabase.auth.signUp({
@@ -81,6 +138,7 @@ const SignUpScreen = ({ navigation }) => {
         city,
         terms_accepted: termsAccepted,
       }]);
+
 
     setLoading(false);
 
@@ -137,13 +195,24 @@ const SignUpScreen = ({ navigation }) => {
         <Picker.Item label="Female" value="female" />
         <Picker.Item label="Other" value="other" />
       </Picker>
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Password"
-        secureTextEntry
-        style={{ padding: 10, borderWidth: 1, marginBottom: 10, borderRadius: 5 }}
-      />
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+        <TextInput
+          value={password}
+          onChangeText={(password) => {
+            setPassword(password);
+            checkPasswordStrength(password);
+          }}
+          placeholder="Password"
+          secureTextEntry={!passwordVisible} // Toggle password visibility
+          style={{ padding: 10, borderWidth: 1, flex: 1, borderRadius: 5 }}
+        />
+        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+          <Text style={{ marginLeft: 10 }}>{passwordVisible ? 'Hide' : 'Show'}</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={{ marginBottom: 10, color: passwordStrength === 'Weak' ? 'red' : passwordStrength === 'Moderate' ? 'orange' : 'green' }}>
+        Password Strength: {passwordStrength}
+      </Text>
       <Picker
         selectedValue={country}
         onValueChange={(value) => setCountry(value)}
