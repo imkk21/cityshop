@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
+/* eslint-disable react/self-closing-comp */
+/* eslint-disable curly */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-shadow */
+import React, { useState, useEffect, useContext } from 'react';
+import {View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, ActivityIndicator, Alert} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
-
 import { CONFIG } from '../utils/config';
+import { AuthContext } from '../context/AuthContext';
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
@@ -11,6 +16,11 @@ const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const { login } = useContext(AuthContext);
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -19,7 +29,34 @@ const LoginScreen = ({ navigation }) => {
     });
   }, []);
 
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  const validatePassword = (password) => {
+    return password.length >= 6;
+  };
+
+  const getPasswordStrength = (password) => {
+    if (password.length === 0) return 0;
+    if (password.length < 6) return 1;
+    if (password.length < 10) return 2;
+    return 3;
+  };
+
+  const passwordStrength = getPasswordStrength(password);
+
   const handleLogin = async () => {
+    if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address.');
+      return;
+    }
+    if (!validatePassword(password)) {
+      setPasswordError('Password must be at least 6 characters long.');
+      return;
+    }
+
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({
       email,
@@ -31,18 +68,11 @@ const LoginScreen = ({ navigation }) => {
     if (error) {
       Alert.alert('Error', error.message);
     } else {
-      Alert.alert('Success', 'Login successful!');
-
-      const { data: userData, error: dbError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
-
-      if (dbError) {
-        Alert.alert('Error', dbError.message);
+      if (data && data.user) {
+        login(data.user);
+        navigation.replace('AppNavigator');
       } else {
-        navigation.navigate('Profile', { user: userData });
+        Alert.alert('Error', 'No user data found');
       }
     }
   };
@@ -63,16 +93,11 @@ const LoginScreen = ({ navigation }) => {
           console.error('Supabase sign-in error:', error.message);
           Alert.alert('Error', 'An error occurred during Google sign-in.');
         } else {
-          const { data: userData, error: dbError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
-
-          if (dbError) {
-            Alert.alert('Error', dbError.message);
+          if (data && data.user) {
+            login(data.user);
+            navigation.replace('AppNavigator');
           } else {
-            navigation.navigate('Profile', { user: userData });
+            Alert.alert('Error', 'No user data found');
           }
         }
       } else {
@@ -92,46 +117,224 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const themeStyles = isDarkMode ? darkStyles : lightStyles;
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-      <Text style={{ fontSize: 24, textAlign: 'center', marginBottom: 20 }}>Login</Text>
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="Email"
-        keyboardType="email-address"
-        style={{ padding: 10, borderWidth: 1, marginBottom: 10, borderRadius: 5 }}
-      />
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Password"
-        secureTextEntry
-        style={{ padding: 10, borderWidth: 1, marginBottom: 20, borderRadius: 5 }}
-      />
-      <Button title={loading ? 'Loading...' : 'Login'} onPress={handleLogin} />
-
-      <GoogleSigninButton
-        size={GoogleSigninButton.Size.Wide}
-        color={GoogleSigninButton.Color.Dark}
-        onPress={handleGoogleSignIn}
-      />
-
-      <Text
-        onPress={() => navigation.navigate('ForgotPassword')}
-        style={{ marginTop: 10, color: 'blue', textAlign: 'center' }}
+    <ImageBackground
+      source={require('../assets/login-background.png')} // Add your background image
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <LinearGradient
+        colors={['rgba(207, 198, 198, 0.6)', 'rgba(100, 94, 94, 0.8)']}
+        style={styles.overlay}
       >
-        Forgot Password?
-      </Text>
+        <View style={[styles.container, themeStyles.container]}>
+          <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
+          </TouchableOpacity>
+          <Text style={[styles.title, themeStyles.text]}>LOGIN</Text>
+          <Text style={[styles.subtitle, themeStyles.text]}>Welcome Back</Text>
 
-      <Text
-        onPress={() => navigation.navigate('SignUp')}
-        style={{ marginTop: 10, color: 'blue', textAlign: 'center' }}
-      >
-        Don’t have an account? Sign Up
-      </Text>
-    </View>
+          <TextInput
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              setEmailError('');
+            }}
+            placeholder="Email"
+            keyboardType="email-address"
+            placeholderTextColor="#36454F"
+            style={[styles.input, themeStyles.input]}
+          />
+          {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+
+          <TextInput
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              setPasswordError('');
+            }}
+            placeholder="Password"
+            secureTextEntry
+            placeholderTextColor="#36454F"
+            style={[styles.input, themeStyles.input]}
+          />
+          {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+          <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginButtonText}>Login</Text>
+            )}
+          </TouchableOpacity>
+
+          <Text style={[styles.orText, themeStyles.text]}>OR</Text>
+
+          <GoogleSigninButton
+            style={styles.googleButton}
+            size={GoogleSigninButton.Size.Wide}
+            color={GoogleSigninButton.Color.Dark}
+            onPress={handleGoogleSignIn}
+          />
+
+          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+            <Text style={styles.linkText}>Forgot Password?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+            <Text style={styles.linkText}>Not a member? Sign up</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    </ImageBackground>
   );
 };
 
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  container: {
+    backgroundColor: 'rgba(39, 37, 37, 0.15)',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  subtitle: {
+  fontSize: 18,
+  marginBottom: 30,
+},
+  input: {
+    width: '100%',
+    padding: 15,
+    borderWidth: 1,
+    marginBottom: 15,
+    borderRadius: 10,
+    fontSize: 16,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 15,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
+  },
+  strengthMeter: {
+    height: 5,
+    width: '100%',
+    backgroundColor: '#ddd',
+    borderRadius: 5,
+    marginBottom: 15,
+  },
+  strengthBar: {
+    height: '100%',
+    borderRadius: 5,
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  checkbox: {
+    height: 20,
+    width: 20,
+    borderWidth: 1,
+    borderColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  checkboxChecked: {
+    backgroundColor: '#007bff',
+  },
+  checkboxText: {
+    color: '#fff',
+  },
+  termsText: {
+    fontSize: 16
+  },
+  signUpButton: {
+    width: '100%',
+    backgroundColor: '#89CFF0',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  signUpButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  linkText: {
+    color: '#007bff',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  themeButton: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+  },
+  themeButtonText: {
+    color: '#007bff',
+    fontSize: 14,
+  },
+});
+
+const lightStyles = StyleSheet.create({
+  container: {
+    backgroundColor: 'rgba(33, 32, 32, 0.1',
+  },
+  text: {
+    color: 'black',
+  },
+  input: {
+    borderColor: '#444',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    color: '#000000',
+  },
+  placeholderText: {
+    color: '#999',
+  },
+});
+
+const darkStyles = StyleSheet.create({
+  container: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  text: {
+    color: '#fff',
+  },
+  input: {
+    borderColor: '#666',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    color: '#fff',
+  },
+  placeholderText: {
+    color: '#999',
+  },
+});
 export default LoginScreen;

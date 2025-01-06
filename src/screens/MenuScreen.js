@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { AuthContext } from '../context/AuthContext';
 
 const Menu = ({ navigation }) => {
+  const { user } = useContext(AuthContext);
+
   const handleNavigation = (screen) => {
-    navigation.navigate(screen);
+    if (screen === 'Profile') {
+      navigation.navigate('Profile', { user });
+    } else {
+      navigation.navigate(screen);
+    }
   };
 
   return (

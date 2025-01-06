@@ -29,8 +29,8 @@ const Done = (props) => (
 const OnboardingScreen = ({ navigation }) => {
   return (
     <Onboarding
-      onSkip={() => navigation.navigate('LoginSreen')}
-      onDone={() => navigation.navigate('LoginScreen')}
+      onSkip={() => navigation.navigate('Home')}
+      onDone={() => navigation.navigate('Home')}
       DoneButtonComponent={Done}
       bottomBarColor="#ffffff"
       pages={[
