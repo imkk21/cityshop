@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import {View, StyleSheet, FlatList, Text, Alert, ActivityIndicator, ImageBackground, TouchableOpacity} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import {
+  View,
+  FlatList,
+  Text,
+  Alert,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 import { CONFIG } from '../utils/config';
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
+const { width } = Dimensions.get('window');
+
 const Home = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -61,162 +70,134 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  const themeStyles = isDarkMode ? darkStyles : lightStyles;
-
   const renderProduct = ({ item }) => (
-    <View style={[styles.card, themeStyles.card]}>
-      <Text style={[styles.productName, themeStyles.text]}>{item.name}</Text>
-      <Text style={[styles.productDescription, themeStyles.text]}>{item.description}</Text>
-      <Text style={[styles.productPrice, themeStyles.text]}>Price: Rs.{item.price}</Text>
-      <TouchableOpacity
-        style={styles.addToCartButton}
-        onPress={() => addToCart(item)}
-      >
+    <TouchableOpacity
+      style={styles.productCard}
+      onPress={() => navigation.navigate('ProductDetail', { product: item })}
+    >
+      <Image source={{ uri: item.image }} style={styles.productImage} />
+      <Text style={styles.productName}>{item.name}</Text>
+      <Text style={styles.productPrice}>Rs. {item.price}</Text>
+      <TouchableOpacity style={styles.addToCartButton} onPress={() => addToCart(item)}>
         <Text style={styles.addToCartButtonText}>Add to Cart</Text>
       </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
+  const renderSection = (title, data, horizontal = false) => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderProduct}
+        horizontal={horizontal}
+        showsHorizontalScrollIndicator={false}
+        numColumns={horizontal ? 1 : 2}
+        columnWrapperStyle={horizontal ? null : styles.columnWrapper}
+      />
     </View>
   );
 
   if (loading) {
     return (
-      <ImageBackground
-        source={require('../assets/login-background.png')}
-        style={styles.background}
-        resizeMode="cover"
-      >
-        <LinearGradient
-          colors={['rgba(0, 0, 0, 0.6)', 'rgba(0, 0, 0, 0.8)']}
-          style={styles.overlay}
-        >
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4facfe" />
-            <Text style={[styles.loadingText, themeStyles.text]}>Loading products...</Text>
-          </View>
-        </LinearGradient>
-      </ImageBackground>
+      <View style={styles.loadingContainer}>
+        <Text>Loading products...</Text>
+      </View>
     );
   }
 
   return (
-    <ImageBackground
-      source={require('../assets/login-background.png')}
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <LinearGradient
-        colors={['rgba(0, 0, 0, 0.6)', 'rgba(0, 0, 0, 0.8)']}
-        style={styles.overlay}
-      >
-        {/* Remove ScrollView and directly use FlatList */}
-        <FlatList
-          data={products}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderProduct}
-          ListHeaderComponent={
-            <View style={styles.scrollContainer}>
-              <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
-                {/* Add an icon or text for the theme button if needed */}
-              </TouchableOpacity>
-            </View>
-          }
-          ListEmptyComponent={
-            <Text style={[styles.emptyText, themeStyles.text]}>No products available.</Text>
-          }
-          contentContainerStyle={styles.scrollContainer}
-        />
-      </LinearGradient>
-    </ImageBackground>
+    <FlatList
+      style={styles.container}
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Discover Products</Text>
+        </View>
+      }
+      data={[]} // Empty data to render only the header and sections
+      renderItem={null} // No items to render
+      ListFooterComponent={
+        <>
+          {renderSection('Popular Products', products.slice(0, 4), true)}
+          {renderSection('All Products', products)}
+        </>
+      }
+    />
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
+  container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#f8f8f8',
+    padding: 10,
   },
-  overlay: {
-    flex: 1,
-    justifyContent: 'center',
+  header: {
+    marginBottom: 20,
   },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 20,
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
   },
-  card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  productCard: {
+    width: width / 2 - 15,
+    backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 15,
-    marginVertical: 5,
+    margin: 5,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
     elevation: 3,
   },
-  productName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  productDescription: {
-    fontSize: 14,
+  productImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: 10,
     marginBottom: 10,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
   },
   productPrice: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#6A82FB',
     marginBottom: 10,
   },
   addToCartButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#6A82FB',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
   },
   addToCartButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-  },
-  themeButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 20,
-  },
-  themeButtonText: {
-    color: '#007bff',
-    fontSize: 14,
-  },
-});
-
-const lightStyles = StyleSheet.create({
-  card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  text: {
-    color: '#fff',
-  },
-});
-
-const darkStyles = StyleSheet.create({
-  card: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  text: {
-    color: '#fff',
   },
 });
 

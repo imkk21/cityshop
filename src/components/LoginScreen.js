@@ -203,14 +203,10 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'center',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
     padding: 20,
   },
   container: {
-    backgroundColor: 'rgba(39, 37, 37, 0.15)',
+    backgroundColor: 'rgba(66, 65, 65, 0.15)',
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
@@ -218,12 +214,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   subtitle: {
-  fontSize: 18,
-  marginBottom: 30,
-},
+    fontSize: 18,
+    marginBottom: 30,
+  },
   input: {
     width: '100%',
     padding: 15,
@@ -231,82 +227,50 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderRadius: 10,
     fontSize: 16,
+    color:'black',
   },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 15,
-  },
-  eyeIcon: {
-    position: 'absolute',
-    right: 15,
-  },
-  strengthMeter: {
-    height: 5,
-    width: '100%',
-    backgroundColor: '#ddd',
-    borderRadius: 5,
-    marginBottom: 15,
-  },
-  strengthBar: {
-    height: '100%',
-    borderRadius: 5,
-  },
-  termsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  checkbox: {
-    height: 20,
-    width: 20,
-    borderWidth: 1,
-    borderColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  checkboxChecked: {
-    backgroundColor: '#007bff',
-  },
-  checkboxText: {
-    color: '#fff',
-  },
-  termsText: {
-    fontSize: 16
-  },
-  signUpButton: {
+  loginButton: {
     width: '100%',
     backgroundColor: '#89CFF0',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 20,
+    borderWidth :1,
+    borderColor:'white',
   },
-  signUpButtonText: {
-    color: '#fff',
-    fontSize: 16,
+  loginButtonText: {
+    color: 'white',
+    fontSize: 18,
     fontWeight: 'bold',
   },
+  orText: {
+    marginBottom: 20,
+  },
+  googleButton: {
+    width: '100%',
+    height: 48,
+    marginBottom: 20,
+  },
   linkText: {
-    color: '#007bff',
-    fontSize: 16,
-    textAlign: 'center',
+    fontSize: 18,
+    marginTop: 10,
+    fontWeight : 'bold',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginBottom: 10,
   },
   themeButton: {
     alignSelf: 'flex-end',
     marginBottom: 20,
   },
-  themeButtonText: {
-    color: '#007bff',
-    fontSize: 14,
-  },
 });
 
 const lightStyles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(33, 32, 32, 0.1',
+    backgroundColor: 'rgba(33, 32, 32, 0.1)',
   },
   text: {
     color: 'black',
@@ -314,27 +278,22 @@ const lightStyles = StyleSheet.create({
   input: {
     borderColor: '#444',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    color: '#000000',
-  },
-  placeholderText: {
-    color: '#999',
+    color: 'black',
   },
 });
 
 const darkStyles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(14, 13, 13, 0.8)',
   },
   text: {
     color: '#fff',
   },
   input: {
     borderColor: '#666',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(138, 134, 134, 0.4)',
     color: '#fff',
   },
-  placeholderText: {
-    color: '#999',
-  },
 });
+
 export default LoginScreen;
