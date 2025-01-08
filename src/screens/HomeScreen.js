@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   FlatList,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 import { CONFIG } from '../utils/config';
+import { AuthContext } from '../context/AuthContext';
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
@@ -19,31 +20,24 @@ const { width } = Dimensions.get('window');
 const Home = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState(null);
+  const { user } = useContext(AuthContext); // Get user from AuthContext
+  const userId = user?.id; // Extract userId from user
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data, error } = await supabase.from('products').select('*');
-
-      if (error) {
+      try {
+        const { data, error } = await supabase.from('products').select('*');
+        if (error) throw error;
+        setProducts(data);
+      } catch (error) {
         console.error('Error fetching products:', error);
         Alert.alert('Error', 'Failed to fetch products.');
-      } else {
-        setProducts(data);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchProducts();
-  }, []);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUserId(session?.user?.id || null);
-    };
-
-    getUser();
   }, []);
 
   const addToCart = async (product) => {
@@ -53,15 +47,62 @@ const Home = ({ navigation }) => {
     }
 
     try {
-      const { error } = await supabase.from('carts').insert([
-        {
-          user_id: userId,
-          product_id: product.id,
-          quantity: 1,
-        },
-      ]);
+      // Check if the user has an existing cart
+      const { data: existingCart, error: fetchCartError } = await supabase
+        .from('carts')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
 
-      if (error) throw error;
+      let cartId;
+      if (fetchCartError || !existingCart) {
+        // If no cart exists, create a new cart
+        const { data: newCart, error: createCartError } = await supabase
+          .from('carts')
+          .insert([{ user_id: userId }])
+          .select('id')
+          .single();
+
+        if (createCartError) throw createCartError;
+        cartId = newCart.id;
+      } else {
+        cartId = existingCart.id;
+      }
+
+      // Check if the product already exists in the cart_items
+      const { data: existingCartItem, error: fetchCartItemError } = await supabase
+        .from('cart_items')
+        .select('*')
+        .eq('cart_id', cartId)
+        .eq('product_id', product.id)
+        .single();
+
+      if (fetchCartItemError && fetchCartItemError.code !== 'PGRST116') { // PGRST116 = No rows found
+        throw fetchCartItemError;
+      }
+
+      if (existingCartItem) {
+        // If the product exists, update the quantity
+        const { error: updateError } = await supabase
+          .from('cart_items')
+          .update({ quantity: existingCartItem.quantity + 1 })
+          .eq('id', existingCartItem.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // If the product doesn't exist, insert a new cart item
+        const { error: insertError } = await supabase
+          .from('cart_items')
+          .insert([
+            {
+              cart_id: cartId,
+              product_id: product.id,
+              quantity: 1,
+            },
+          ]);
+
+        if (insertError) throw insertError;
+      }
 
       Alert.alert('Success', 'Item added to cart.');
     } catch (error) {

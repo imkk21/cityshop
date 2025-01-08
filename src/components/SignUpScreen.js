@@ -1,9 +1,12 @@
+/* eslint-disable react/self-closing-comp */
+/* eslint-disable no-shadow */
+/* eslint-disable curly */
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import DateTimePicker from '@react-native-community/datetimepicker'; // For DOB calendar
-import Icon from 'react-native-vector-icons/FontAwesome'; // For eye icon
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { createClient } from '@supabase/supabase-js';
 import { CONFIG } from '../utils/config';
 
@@ -15,8 +18,8 @@ const SignUpScreen = ({ navigation }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
-  const [dob, setDob] = useState(null); // DOB as a Date object (initially null)
-  const [showDatePicker, setShowDatePicker] = useState(false); // For DOB calendar
+  const [dob, setDob] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -157,7 +160,7 @@ const SignUpScreen = ({ navigation }) => {
             <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
             </TouchableOpacity>
 
-            <Text style={[styles.title, themeStyles.text]}>Sign Up</Text>
+            <Text style={[styles.title, themeStyles.text]}>SIGN UP</Text>
             <Text style={[styles.subtitle, themeStyles.text]}>Let's Register You</Text>
 
             <TextInput
@@ -353,7 +356,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   termsText: {
-    fontSize: 16
+    fontSize: 16,
   },
   signUpButton: {
     width: '100%',

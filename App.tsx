@@ -7,6 +7,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { AuthProvider } from './src/context/AuthContext'; // Import AuthProvider
 import ProfileScreen from './src/screens/ProfileScreen';
 import SignUpScreen from './src/components/SignUpScreen';
+import ForgotPasswordScreen from './src/screens/ForgetPasswordScreen';
 // import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 // GoogleSignin.configure({
@@ -33,6 +34,11 @@ const App = () => {
           <Stack.Screen
             name="Profile"
             component={ProfileScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPasswordScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen

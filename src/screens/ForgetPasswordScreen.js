@@ -1,7 +1,17 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { createClient } from '@supabase/supabase-js';
-
 import { CONFIG } from '../utils/config';
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
@@ -19,10 +29,9 @@ const ForgotPasswordScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
-      // Step 1: Verify if the email exists in the `auth.users` table
       const { data, error: emailError } = await supabase
-        .from('users') // Use the `auth.users` view in Supabase
-        .select('id') // Select only the ID to check if the email exists
+        .from('users') // Check if the email exists in the database
+        .select('id')
         .eq('email', email)
         .single();
 
@@ -32,7 +41,6 @@ const ForgotPasswordScreen = ({ navigation }) => {
         return;
       }
 
-      // Step 2: If email exists, proceed with password reset
       const { error } = await supabase.auth.resetPasswordForEmail(email);
 
       if (error) {
@@ -52,18 +60,108 @@ const ForgotPasswordScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-      <Text style={{ fontSize: 24, textAlign: 'center', marginBottom: 20 }}>Forgot Password</Text>
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        style={{ padding: 10, borderWidth: 1, marginBottom: 20, borderRadius: 5 }}
-      />
-      <Button title={loading ? 'Loading...' : 'Reset Password'} onPress={handlePasswordReset} />
-    </View>
+    <ImageBackground
+      source={require('../assets/login-background.png')}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <LinearGradient
+        colors={['rgba(207, 198, 198, 0.6)', 'rgba(100, 94, 94, 0.8)']}
+        style={styles.overlay}
+      >
+        <View style={styles.container}>
+          <Text style={styles.title}>FORGOT PASSWORD</Text>
+          <Text style={styles.subtitle}>Reset Your Password</Text>
+
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email"
+            keyboardType="email-address"
+            placeholderTextColor="#36454F"
+            style={styles.input}
+          />
+
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={handlePasswordReset}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginButtonText}>Reset Password</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.linkText}>Back to Login</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    </ImageBackground>
   );
 };
+
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  container: {
+    backgroundColor: 'rgba(66, 65, 65, 0.15)',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: 'black',
+  },
+  subtitle: {
+    fontSize: 18,
+    marginBottom: 30,
+    color: 'black',
+  },
+  input: {
+    width: '100%',
+    padding: 15,
+    borderWidth: 1,
+    marginBottom: 15,
+    borderRadius: 10,
+    fontSize: 16,
+    borderColor: '#444',
+    backgroundColor: 'white',
+    color: 'black',
+  },
+  loginButton: {
+    width: '100%',
+    backgroundColor: '#89CFF0',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'white',
+  },
+  loginButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  linkText: {
+    fontSize: 18,
+    marginTop: 10,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+});
 
 export default ForgotPasswordScreen;
