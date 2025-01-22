@@ -14,7 +14,7 @@ import { createClient } from '@supabase/supabase-js';
 import { CONFIG } from '../utils/config';
 import { AuthContext } from '../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // For icons
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
@@ -23,9 +23,9 @@ const { width } = Dimensions.get('window');
 const CartScreen = ({ navigation }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState('Credit Card'); // Default payment method
-  const { user } = useContext(AuthContext); // Get user from AuthContext
-  const userId = user?.id; // Extract userId from user
+  const [paymentMethod, setPaymentMethod] = useState('Credit Card');
+  const { user } = useContext(AuthContext);
+  const userId = user?.id;
 
   const fetchCartItems = useCallback(async () => {
     try {

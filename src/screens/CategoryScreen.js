@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,12 @@ import {
   ActivityIndicator,
   Image,
   Dimensions,
+  RefreshControl,
+  Animated,
 } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
-import { CONFIG } from '../utils/config';
+import { CONFIG } from '../utils/config'; // Adjust the path as needed
+import { AuthContext } from '../context/AuthContext'; // Import AuthContext
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 const { width, height } = Dimensions.get('window');
@@ -20,63 +23,121 @@ const CategoryScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [refreshing, setRefreshing] = useState(false); // For pull-to-refresh
+  const [page, setPage] = useState(1); // For pagination
+  const [hasMore, setHasMore] = useState(true); // For pagination
+  const fadeAnim = useRef(new Animated.Value(0)).current; // Animation for product list fade-in
 
+  // Access the authenticated user from AuthContext
+  const { user } = useContext(AuthContext);
+
+  // Fetch unique categories from the products table
   useEffect(() => {
-    const fetchUniqueCategories = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('category')
-          .neq('category', null);
-
-        if (error) throw error;
-
-        // Get unique categories using Set
-        const uniqueCategories = [...new Set(data.map((item) => item.category))];
-
-        // Format categories for display
-        const formattedCategories = uniqueCategories.map((category, index) => ({
-          id: index + 1,
-          name: category,
-        }));
-
-        setCategories(formattedCategories);
-      } catch (error) {
-        console.error('Error fetching unique categories:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUniqueCategories();
   }, []);
 
+  const fetchUniqueCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('category')
+        .neq('category', null);
+
+      if (error) throw error;
+
+      // Get unique categories using Set
+      const uniqueCategories = [...new Set(data.map((item) => item.category))];
+
+      // Format categories for display
+      const formattedCategories = uniqueCategories.map((category, index) => ({
+        id: index + 1,
+        name: category,
+      }));
+
+      setCategories(formattedCategories);
+    } catch (error) {
+      console.error('Error fetching unique categories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch products based on the selected category
-  const fetchProductsByCategory = async (category) => {
+  const fetchProductsByCategory = async (category, reset = false) => {
+    if (!category) return;
+
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('category', category.name);
+        .eq('category', category.name)
+        .range((reset ? 0 : (page - 1) * 10), (reset ? 9 : page * 10 - 1)); // Pagination
 
       if (error) throw error;
-      setProducts(data);
-      setSelectedCategory(category); // Set the selected category
+
+      if (reset) {
+        setProducts(data);
+        setPage(1);
+      } else {
+        setProducts((prev) => [...prev, ...data]);
+      }
+
+      // Check if there are more products to load
+      if (data.length < 10) setHasMore(false);
+      else setHasMore(true);
+
+      // Fade-in animation
+      fadeAnim.setValue(0);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Handle category selection
+  const handleCategoryPress = (category) => {
+    setSelectedCategory(category);
+    fetchProductsByCategory(category, true); // Reset products and load first page
+  };
+
+  // Handle pull-to-refresh
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchProductsByCategory(selectedCategory, true); // Reset products and load first page
+  };
+
+  // Handle pagination (load more products)
+  const loadMoreProducts = () => {
+    if (hasMore) {
+      setPage((prev) => prev + 1);
     }
   };
 
   // Render a category item
   const renderCategoryItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.categoryItem}
-      onPress={() => fetchProductsByCategory(item)}
+      style={[
+        styles.categoryItem,
+        selectedCategory?.id === item.id && styles.selectedCategoryItem,
+      ]}
+      onPress={() => handleCategoryPress(item)}
     >
-      <Text style={styles.categoryText}>{item.name}</Text>
+      <Text
+        style={[
+          styles.categoryText,
+          selectedCategory?.id === item.id && styles.selectedCategoryText,
+        ]}
+      >
+        {item.name}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -100,7 +161,17 @@ const CategoryScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  if (loading) {
+  // Render footer for pagination loading
+  const renderFooter = () => {
+    if (!hasMore) return null;
+    return (
+      <View style={styles.footer}>
+        <ActivityIndicator size="small" color="#6A82FB" />
+      </View>
+    );
+  };
+
+  if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#6A82FB" />
@@ -138,11 +209,17 @@ const CategoryScreen = ({ navigation }) => {
 
           {/* Product List */}
           <Text style={styles.sectionTitle}>{selectedCategory.name} Products</Text>
-          <FlatList
+          <Animated.FlatList
             data={products}
             renderItem={renderProductItem}
             keyExtractor={(item) => item.id.toString()}
-            style={styles.productList}
+            style={{ opacity: fadeAnim }}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            onEndReached={loadMoreProducts} // Load more products on scroll
+            onEndReachedThreshold={0.5} // Trigger loadMoreProducts when 50% of the list is scrolled
+            ListFooterComponent={renderFooter} // Show loading spinner at the bottom
           />
         </>
       )}
@@ -180,11 +257,17 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
+  selectedCategoryItem: {
+    backgroundColor: '#6A82FB',
+  },
   categoryText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
+  },
+  selectedCategoryText: {
+    color: '#fff',
   },
   productItem: {
     flexDirection: 'row',
@@ -232,6 +315,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#6A82FB',
+  },
+  footer: {
+    padding: 10,
+    alignItems: 'center',
   },
   loadingContainer: {
     flex: 1,

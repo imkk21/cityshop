@@ -17,7 +17,7 @@ const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
 const { width } = Dimensions.get('window');
 
-const Home = ({ navigation }) => {
+const HomeScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useContext(AuthContext); // Get user from AuthContext
@@ -242,4 +242,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Home;
+export default HomeScreen;
