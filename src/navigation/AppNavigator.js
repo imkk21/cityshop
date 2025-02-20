@@ -29,13 +29,16 @@ const AppNavigator = () => {
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#007bff',
-        tabBarInactiveTintColor: 'gray',
+        tabBarInactiveTintColor: '#FFFFFF',
+        tabBarStyle: {
+          backgroundColor: 'rgb(2, 12, 28)', // Set the tab bar background color to black
+        },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Category" component={CategoryScreen} />
-      <Tab.Screen name="Cart" component={CartScreen} />
-      <Tab.Screen name="Menu" component={MenuScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="Category" component={CategoryScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="Cart" component={CartScreen} options={{ headerShown: false }}/>
+      <Tab.Screen name="Menu" component={MenuScreen} options={{ headerShown: false }}/>
     </Tab.Navigator>
   );
 };

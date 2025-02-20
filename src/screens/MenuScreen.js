@@ -1,9 +1,11 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Share, Image } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { AuthContext } from '../context/AuthContext';
 import { createClient } from '@supabase/supabase-js';
 import { CONFIG } from '../utils/config';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
@@ -12,16 +14,14 @@ const Menu = ({ navigation }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [userDetails, setUserDetails] = useState({});
 
-
   useEffect(() => {
     const fetchUserDetails = async () => {
       if (!user?.id) return;
 
       try {
-
         const { data, error } = await supabase
           .from('users')
-          .select('first_name, last_name')
+          .select('first_name, last_name, profile_photo_url')
           .eq('id', user.id)
           .single();
 
@@ -38,10 +38,10 @@ const Menu = ({ navigation }) => {
     fetchUserDetails();
   }, [user?.id]);
 
-
   const firstName = userDetails?.first_name || '';
   const lastName = userDetails?.last_name || '';
   const fullName = `${firstName} ${lastName}`.trim();
+  const profilePhoto = userDetails?.profile_photo_url || 'https://via.placeholder.com/150';
 
   const handleNavigation = (screen) => {
     if (screen === 'Profile') {
@@ -65,7 +65,7 @@ const Menu = ({ navigation }) => {
           text: 'Logout',
           onPress: () => {
             logout();
-            navigation.navigate('Login');
+            navigation.navigate('RoleSelection');
           },
         },
       ],
@@ -84,37 +84,39 @@ const Menu = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#FFFFFF', '#FFFFFF']} // Gradient colors (light green to blue)
+      start={{ x: 0, y: 0 }} // Gradient start point (top-left)
+      end={{ x: 2, y: 1 }} // Gradient end point (bottom-right)
+      style={styles.container}
+    >
+      <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+                  <Icon name="arrow-back" size={24} color="#000000" />
+                </TouchableOpacity>
+              </View>
+      
       <View style={styles.profileSection}>
-        <Image
-          source={{ uri: user?.profilePicture || 'https://via.placeholder.com/150' }}
-          style={styles.profileImage}
-        />
+        <Image source={{ uri: profilePhoto }} style={styles.profileImage} />
         {fullName ? <Text style={styles.userName}>{fullName}</Text> : null}
         {user?.email ? <Text style={styles.userEmail}>{user.email}</Text> : null}
       </View>
 
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={() => handleNavigation('Profile')}>
+      <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Profile')}>
         <View style={styles.menuItemContent}>
           <MaterialIcons name="person" size={24} color="#6A82FB" />
           <Text style={styles.menuText}>Profile</Text>
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={() => handleNavigation('Settings')}>
+      <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Settings')}>
         <View style={styles.menuItemContent}>
           <MaterialIcons name="settings" size={24} color="#6A82FB" />
           <Text style={styles.menuText}>Settings</Text>
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={() => handleNavigation('Notifications')}>
+      <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Notifications')}>
         <View style={styles.menuItemContent}>
           <MaterialIcons name="notifications" size={24} color="#6A82FB" />
           <Text style={styles.menuText}>Notifications</Text>
@@ -124,33 +126,21 @@ const Menu = ({ navigation }) => {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={toggleTheme}>
+      {/* <TouchableOpacity style={styles.menuItem} onPress={toggleTheme}>
         <View style={styles.menuItemContent}>
-          <MaterialIcons
-            name={isDarkMode ? 'brightness-7' : 'brightness-4'}
-            size={24}
-            color="#6A82FB"
-          />
-          <Text style={styles.menuText}>
-            {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-          </Text>
+          <MaterialIcons name={isDarkMode ? 'brightness-7' : 'brightness-4'} size={24} color="#6A82FB" />
+          <Text style={styles.menuText}>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</Text>
         </View>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={handleShareApp}>
+      <TouchableOpacity style={styles.menuItem} onPress={handleShareApp}>
         <View style={styles.menuItemContent}>
           <MaterialIcons name="share" size={24} color="#6A82FB" />
           <Text style={styles.menuText}>Share App</Text>
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={handleLogout}>
+      <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
         <View style={styles.menuItemContent}>
           <MaterialIcons name="logout" size={24} color="#6A82FB" />
           <Text style={styles.menuText}>Logout</Text>
@@ -158,16 +148,19 @@ const Menu = ({ navigation }) => {
       </TouchableOpacity>
 
       <Text style={styles.versionText}>Version 1.0.0</Text>
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
   },
+  header:{
+    marginHorizontal:5,
+  },
+
   profileSection: {
     alignItems: 'center',
     marginBottom: 24,
@@ -181,18 +174,18 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#000000', // White text for better visibility on gradient
   },
   userEmail: {
     fontSize: 16,
-    color: '#666',
+    color: '#000000', // White text for better visibility on gradient
   },
   menuItem: {
-    padding: 16,
+    padding: 18,
     marginVertical: 8,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    elevation: 2,
+    backgroundColor: '#333', // Semi-transparent white background
+    borderRadius: 9,
+    elevation: 3,
   },
   menuItemContent: {
     flexDirection: 'row',
@@ -202,7 +195,7 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#333',
+    color: '#FFFFFF',
   },
   notificationBadge: {
     backgroundColor: 'red',
@@ -218,7 +211,7 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 14,
-    color: '#999',
+    color: '#gray', // White text for better visibility on gradient
     textAlign: 'center',
     marginTop: 'auto',
     paddingVertical: 16,

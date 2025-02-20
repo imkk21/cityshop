@@ -15,6 +15,7 @@ import { CONFIG } from '../utils/config';
 import { AuthContext } from '../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
@@ -138,7 +139,7 @@ const CartScreen = ({ navigation }) => {
         style={styles.removeButton}
         onPress={() => removeFromCart(item.id)}
       >
-        <Icon name="delete" size={24} color="#ff4444" />
+        <Icon name="delete" size={24} color="rgb(2, 12, 28)" />
       </TouchableOpacity>
     </View>
   );
@@ -153,83 +154,100 @@ const CartScreen = ({ navigation }) => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text>Loading cart items...</Text>
-      </View>
+      <LinearGradient
+        colors={['#FFFFFF', '#FFFFFF']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 2, y: 1 }}
+        style={styles.loadingContainer}
+      >
+        <Text style={styles.loadingText}>Loading cart items...</Text>
+      </LinearGradient>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Cart</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-          <Text style={styles.addMoreText}>Add more</Text>
+    <LinearGradient
+      colors={['#FFFFFF', '#FFFFFF']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 2, y: 1 }}
+      style={styles.container}
+    >
+      <ScrollView style={styles.scrollContainer}>
+        {/* Header with Back Button */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+            <Icon name="arrow-back" size={24} color="#000000" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>My Cart</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+            <Text style={styles.addMoreText}>Add more</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Cart Items */}
+        <FlatList
+          data={cartItems}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderCartItem}
+          scrollEnabled={false} // Disable scrolling for FlatList inside ScrollView
+        />
+
+        {/* Order Summary */}
+        <View style={styles.summaryContainer}>
+          <Text style={styles.summaryTitle}>Order Summary</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Items:</Text>
+            <Text style={styles.summaryValue}>{cartItems.length}</Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Delivery charge:</Text>
+            <Text style={styles.summaryValue}>Rs. {deliveryCharge.toFixed(2)}</Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Sub Total:</Text>
+            <Text style={styles.summaryValue}>Rs. {subtotal.toFixed(2)}</Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Total:</Text>
+            <Text style={styles.summaryValue}>Rs. {total.toFixed(2)}</Text>
+          </View>
+        </View>
+
+        {/* Payment Method */}
+        <View style={styles.paymentContainer}>
+          <Text style={styles.paymentTitle}>Payment Method</Text>
+          <TouchableOpacity
+            style={styles.paymentOption}
+            onPress={() => {
+              // Open a modal or navigate to a payment method selection screen
+              Alert.alert('Select Payment Method', 'Choose your payment method', [
+                { text: 'Credit Card', onPress: () => setPaymentMethod('Credit Card') },
+                { text: 'Debit Card', onPress: () => setPaymentMethod('Debit Card') },
+                { text: 'UPI', onPress: () => setPaymentMethod('UPI') },
+                { text: 'Cancel', style: 'cancel' },
+              ]);
+            }}
+          >
+            <Text style={styles.paymentText}>{paymentMethod}</Text>
+            <Icon name="keyboard-arrow-down" size={24} color="#666" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Checkout Button */}
+        <TouchableOpacity style={styles.checkoutButton} onPress={() => Alert.alert('Checkout', 'Proceeding to checkout...')}>
+          <Text style={styles.checkoutButtonText}>Proceed To Checkout</Text>
         </TouchableOpacity>
-      </View>
-
-      {/* Cart Items */}
-      <FlatList
-        data={cartItems}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderCartItem}
-        scrollEnabled={false} // Disable scrolling for FlatList inside ScrollView
-      />
-
-      {/* Order Summary */}
-      <View style={styles.summaryContainer}>
-        <Text style={styles.summaryTitle}>Order Summary</Text>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Items:</Text>
-          <Text style={styles.summaryValue}>{cartItems.length}</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Delivery charge:</Text>
-          <Text style={styles.summaryValue}>Rs. {deliveryCharge.toFixed(2)}</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Sub Total:</Text>
-          <Text style={styles.summaryValue}>Rs. {subtotal.toFixed(2)}</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Total:</Text>
-          <Text style={styles.summaryValue}>Rs. {total.toFixed(2)}</Text>
-        </View>
-      </View>
-
-      {/* Payment Method */}
-      <View style={styles.paymentContainer}>
-        <Text style={styles.paymentTitle}>Payment Method</Text>
-        <TouchableOpacity
-          style={styles.paymentOption}
-          onPress={() => {
-            // Open a modal or navigate to a payment method selection screen
-            Alert.alert('Select Payment Method', 'Choose your payment method', [
-              { text: 'Credit Card', onPress: () => setPaymentMethod('Credit Card') },
-              { text: 'Debit Card', onPress: () => setPaymentMethod('Debit Card') },
-              { text: 'UPI', onPress: () => setPaymentMethod('UPI') },
-              { text: 'Cancel', style: 'cancel' },
-            ]);
-          }}
-        >
-          <Text style={styles.paymentText}>{paymentMethod}</Text>
-          <Icon name="keyboard-arrow-down" size={24} color="#666" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Checkout Button */}
-      <TouchableOpacity style={styles.checkoutButton} onPress={() => Alert.alert('Checkout', 'Proceeding to checkout...')}>
-        <Text style={styles.checkoutButtonText}>Proceed To Checkout</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
+  },
+  scrollContainer: {
+    flex: 1,
     padding: 20,
   },
   header: {
@@ -241,17 +259,18 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#000000',
+    marginRight:140,
   },
   addMoreText: {
     fontSize: 16,
-    color: '#6A82FB',
+    color: '#000000',
     fontWeight: 'bold',
   },
   cartItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     marginBottom: 10,
     padding: 15,
@@ -286,7 +305,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   quantityButton: {
-    backgroundColor: '#6A82FB',
+    backgroundColor: 'rgb(2, 12, 28)',
     borderRadius: 5,
     padding: 5,
     width: 30,
@@ -301,7 +320,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   summaryContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 15,
     marginTop: 20,
@@ -332,7 +351,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   paymentContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 15,
     marginTop: 20,
@@ -361,14 +380,14 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   checkoutButton: {
-    backgroundColor: '#6A82FB',
+    backgroundColor: 'rgb(2, 12, 28)',
     borderRadius: 10,
     padding: 15,
     alignItems: 'center',
     marginTop: 20,
   },
   checkoutButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -376,6 +395,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#FFFFFF',
   },
 });
 

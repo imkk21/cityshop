@@ -1,9 +1,16 @@
-/* eslint-disable react/self-closing-comp */
-/* eslint-disable no-shadow */
-/* eslint-disable curly */
-/* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+} from 'react-native';
+import * as Animatable from 'react-native-animatable';
 import LinearGradient from 'react-native-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -23,7 +30,6 @@ const SignUpScreen = ({ navigation }) => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const getPasswordStrength = (password) => {
     if (password.length === 0) return 0;
@@ -132,12 +138,6 @@ const SignUpScreen = ({ navigation }) => {
     }
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  const themeStyles = isDarkMode ? darkStyles : lightStyles;
-
   const handleDateChange = (event, selectedDate) => {
     setShowDatePicker(false);
     if (selectedDate) {
@@ -147,129 +147,172 @@ const SignUpScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={require('../assets/login-background.png')} // Add your background image
+      source={require('../assets/login-background.jpg')} // Replace with your background image
       style={styles.background}
       resizeMode="cover"
     >
+      {/* Gradient Overlay */}
       <LinearGradient
-        colors={['rgba(103,99,99, 0.6)', 'rgba(128,118,118, 0.8)']}
-        style={styles.overlay}
+        colors={['rgba(0, 0, 0, 0.6)', 'rgba(0, 0, 0, 0.2)']}
+        style={styles.gradientOverlay}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <View style={[styles.container, themeStyles.container]}>
-            <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
-            </TouchableOpacity>
+          <View style={styles.overlay}>
+            <Animatable.View animation="fadeInDown" duration={1500} style={styles.titleContainer}>
+              <Text style={styles.title}>SIGN UP</Text>
+              <Text style={styles.subtitle}>Let's Register You</Text>
+            </Animatable.View>
 
-            <Text style={[styles.title, themeStyles.text]}>SIGN UP</Text>
-            <Text style={[styles.subtitle, themeStyles.text]}>Let's Register You</Text>
-
-            <TextInput
-              value={firstName}
-              onChangeText={setFirstName}
-              placeholder="First Name"
-              placeholderTextColor="#36454F"
-              style={[styles.input, themeStyles.input]}
-            />
-            <TextInput
-              value={lastName}
-              onChangeText={setLastName}
-              placeholder="Last Name"
-              placeholderTextColor="#36454F"
-              style={[styles.input, themeStyles.input]}
-            />
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Email"
-              keyboardType="email-address"
-              placeholderTextColor="#36454F"
-              style={[styles.input, themeStyles.input]}
-            />
-            <TextInput
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="Phone Number (+91)"
-              keyboardType="phone-pad"
-              placeholderTextColor="#36454F"
-              style={[styles.input, themeStyles.input]}
-            />
-            <TouchableOpacity
-              onPress={() => setShowDatePicker(true)}
-              style={[styles.input, themeStyles.input, { justifyContent: 'center' }]}
-            >
-              <Text style={{ color: dob ? '#fff' : '#36454F' }}>
-                {dob ? dob.toLocaleDateString() : 'Date of Birth'}
-              </Text>
-            </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePicker
-                value={dob || new Date()} // Use current date if dob is null
-                mode="date"
-                display="default"
-                onChange={handleDateChange}
-              />
-            )}
-            <View style={styles.passwordContainer}>
+            {/* First Name Input */}
+            <Animatable.View animation="fadeInUp" duration={1500} style={styles.inputContainer}>
               <TextInput
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                }}
-                placeholder="Password"
-                secureTextEntry={!passwordVisible}
-                placeholderTextColor="#36454F"
-                style={[styles.input, themeStyles.input, { flex: 1 }]}
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholder="First Name"
+                placeholderTextColor="#999"
+                style={styles.input}
               />
+              <View style={styles.underline} />
+            </Animatable.View>
+
+            {/* Last Name Input */}
+            <Animatable.View animation="fadeInUp" duration={1500} style={styles.inputContainer}>
+              <TextInput
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder="Last Name"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </Animatable.View>
+
+            {/* Email Input */}
+            <Animatable.View animation="fadeInUp" duration={1500} style={styles.inputContainer}>
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Email"
+                keyboardType="email-address"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </Animatable.View>
+
+            {/* Phone Input */}
+            <Animatable.View animation="fadeInUp" duration={1500} style={styles.inputContainer}>
+              <TextInput
+                value={phone}
+                onChangeText={setPhone}
+                placeholder="Phone Number (+91)"
+                keyboardType="phone-pad"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </Animatable.View>
+
+            {/* Date of Birth Input */}
+            <Animatable.View animation="fadeInUp" duration={1500} style={styles.inputContainer}>
               <TouchableOpacity
-                onPress={() => setPasswordVisible(!passwordVisible)}
-                style={styles.eyeIcon}
+                onPress={() => setShowDatePicker(true)}
+                style={styles.dateInput}
               >
-                <Icon
-                  name={passwordVisible ? 'eye-slash' : 'eye'}
-                  size={20}
-                  color="#36454F"
-                />
+                <Text style={[styles.dateText, !dob && { color: '#999' }]}>
+                  {dob ? dob.toLocaleDateString() : 'Date of Birth'}
+                </Text>
               </TouchableOpacity>
-            </View>
-            <View style={styles.strengthMeter}>
-              <View
-                style={[
-                  styles.strengthBar,
-                  {
-                    width: `${(passwordStrength / 3) * 100}%`,
-                    backgroundColor:
-                      passwordStrength === 1
-                        ? 'red'
-                        : passwordStrength === 2
-                        ? 'orange'
-                        : 'green',
-                  },
-                ]}
-              />
-            </View>
-            <TouchableOpacity
-              style={styles.termsContainer}
-              onPress={() => setTermsAccepted(!termsAccepted)}
-            >
-              <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
-                {termsAccepted && <Text style={styles.checkboxText}>✓</Text>}
-              </View>
-              <Text style={[styles.termsText, themeStyles.text]}>I accept the terms and conditions</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.signUpButton}
-              onPress={handleSignUp}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.signUpButtonText}>Sign Up</Text>
+              <View style={styles.underline} />
+              {showDatePicker && (
+                <DateTimePicker
+                  value={dob || new Date()} // Use current date if dob is null
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                />
               )}
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.linkText}>Already have an account? Log in</Text>
-            </TouchableOpacity>
+            </Animatable.View>
+
+            {/* Password Input */}
+            <Animatable.View animation="fadeInUp" duration={1500} style={styles.inputContainer}>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Password"
+                  secureTextEntry={!passwordVisible}
+                  placeholderTextColor="#999"
+                  style={styles.input}
+                />
+                <TouchableOpacity
+                  onPress={() => setPasswordVisible(!passwordVisible)}
+                  style={styles.eyeIcon}
+                >
+                  <Icon
+                    name={passwordVisible ? 'eye-slash' : 'eye'}
+                    size={20}
+                    color="#999"
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.underline} />
+            </Animatable.View>
+
+            {/* Password Strength Meter */}
+            <Animatable.View animation="fadeInUp" duration={1500} style={styles.strengthMeterContainer}>
+              <View style={styles.strengthMeter}>
+                <View
+                  style={[
+                    styles.strengthBar,
+                    {
+                      width: `${(passwordStrength / 3) * 100}%`,
+                      backgroundColor:
+                        passwordStrength === 1
+                          ? 'red'
+                          : passwordStrength === 2
+                          ? 'orange'
+                          : 'green',
+                    },
+                  ]}
+                />
+              </View>
+            </Animatable.View>
+
+            {/* Terms and Conditions */}
+            <Animatable.View animation="fadeInUp" duration={1500} style={styles.termsContainer}>
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => setTermsAccepted(!termsAccepted)}
+              >
+                <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
+                  {termsAccepted && <Text style={styles.checkboxText}>✓</Text>}
+                </View>
+                <Text style={styles.termsText}>I accept the terms and conditions</Text>
+              </TouchableOpacity>
+            </Animatable.View>
+
+            {/* Sign Up Button */}
+            <Animatable.View animation="fadeInUp" duration={1500} style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.signUpButton}
+                onPress={handleSignUp}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.signUpButtonText}>SIGN UP</Text>
+                )}
+              </TouchableOpacity>
+            </Animatable.View>
+
+            {/* Login Link */}
+            <Animatable.View animation="fadeInUp" duration={1500} style={styles.linkContainer}>
+              <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                <Text style={styles.linkText}>Already have an account?</Text>
+              </TouchableOpacity>
+            </Animatable.View>
           </View>
         </ScrollView>
       </LinearGradient>
@@ -282,63 +325,91 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  overlay: {
+  gradientOverlay: {
     flex: 1,
     justifyContent: 'center',
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
     padding: 20,
   },
-  container: {
-    backgroundColor: 'rgba(39, 37, 37, 0.15)',
-    borderRadius: 20,
-    padding: 20,
+  titleContainer: {
     alignItems: 'center',
+    marginBottom: 40,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
   },
   subtitle: {
-  fontSize: 18,
-  marginBottom: 30,
-},
+    fontSize: 18,
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
+  },
+  inputContainer: {
+    width: '100%',
+    marginBottom: 20,
+  },
   input: {
     width: '100%',
-    padding: 15,
-    borderWidth: 1,
-    marginBottom: 15,
-    borderRadius: 10,
+    height: 50,
     fontSize: 16,
+    color: '#fff',
+    paddingVertical: 12, // Ensure placeholder text is vertically centered
+  },
+  dateInput: {
+    width: '100%',
+    height: 50,
+    justifyContent: 'center', // Center the text vertically
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#fff',
+  },
+  underline: {
+    height: 1,
+    backgroundColor: '#fff',
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
-    marginBottom: 15,
   },
   eyeIcon: {
     position: 'absolute',
-    right: 15,
+    right: 0,
+  },
+  strengthMeterContainer: {
+    width: '100%',
+    marginBottom: 20,
   },
   strengthMeter: {
     height: 5,
     width: '100%',
     backgroundColor: '#ddd',
     borderRadius: 5,
-    marginBottom: 15,
   },
   strengthBar: {
     height: '100%',
     borderRadius: 5,
   },
   termsContainer: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
   },
   checkbox: {
     height: 20,
@@ -356,67 +427,33 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   termsText: {
+    color: '#fff',
     fontSize: 16,
+  },
+  buttonContainer: {
+    width: '100%',
+    marginBottom: 20,
   },
   signUpButton: {
     width: '100%',
-    backgroundColor: '#89CFF0',
-    padding: 15,
+    height: 50,
+    backgroundColor: '#ff6f61',
     borderRadius: 10,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
   },
   signUpButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
+  linkContainer: {
+    alignItems: 'center',
+  },
   linkText: {
-    color: '#007bff',
+    color: '#fff',
     fontSize: 16,
-    textAlign: 'center',
-  },
-  themeButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 20,
-  },
-  themeButtonText: {
-    color: '#007bff',
-    fontSize: 14,
   },
 });
 
-const lightStyles = StyleSheet.create({
-  container: {
-    backgroundColor: 'rgba(33, 32, 32, 0.1',
-  },
-  text: {
-    color: 'black',
-  },
-  input: {
-    borderColor: '#444',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    color: '#000000',
-  },
-  placeholderText: {
-    color: '#999',
-  },
-});
-
-const darkStyles = StyleSheet.create({
-  container: {
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  text: {
-    color: '#fff',
-  },
-  input: {
-    borderColor: '#666',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    color: '#fff',
-  },
-  placeholderText: {
-    color: '#999',
-  },
-});
 export default SignUpScreen;

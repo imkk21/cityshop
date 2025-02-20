@@ -1,73 +1,155 @@
-import React from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // You can use other icon sets like FontAwesome, Ionicons, etc.
+import React, { useState, useRef, useEffect } from 'react';
+import { View, TextInput, TouchableOpacity, StyleSheet, Image, Animated, Easing } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import LinearGradient from 'react-native-linear-gradient';
 
-const CustomHeader = ({ navigation }) => {
+const CustomHeader = ({ navigation, onSearch }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchBarScale = useRef(new Animated.Value(1)).current;
+  const iconBounce = useRef(new Animated.Value(1)).current;
+
+  const handleSearch = () => {
+    if (onSearch) {
+      onSearch(searchQuery);
+    }
+  };
+
+  const animateSearchBar = () => {
+    Animated.sequence([
+      Animated.timing(searchBarScale, {
+        toValue: 1.05,
+        duration: 100,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      }),
+      Animated.timing(searchBarScale, {
+        toValue: 1,
+        duration: 100,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const animateIcon = (icon) => {
+    Animated.sequence([
+      Animated.timing(icon, {
+        toValue: 1.2,
+        duration: 100,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      }),
+      Animated.timing(icon, {
+        toValue: 1,
+        duration: 100,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  useEffect(() => {
+    animateSearchBar();
+  }, [searchQuery]);
+
   return (
-    <View style={styles.header}>
+    <LinearGradient
+      colors={['rgb(2, 12, 28)', 'rgb(2, 12, 28)']} // Black gradient
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.headerContainer}
+    >
+      {/* Top Section with Logo and Icons */}
+      <View style={styles.topSection}>
+        <Image source={require('../assets/logo.jpeg')} style={styles.logo} />
+        <View style={styles.iconContainer}>
+          <TouchableOpacity onPress={() => { animateIcon(iconBounce); navigation.navigate('Notifications'); }}>
+            <Animated.View style={{ transform: [{ scale: iconBounce }] }}>
+              <Icon name="notifications" size={26} color="#fff" style={styles.icon} />
+            </Animated.View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { animateIcon(iconBounce); navigation.navigate('Wishlist'); }}>
+            <Animated.View style={{ transform: [{ scale: iconBounce }] }}>
+              <Icon name="favorite" size={26} color="#fff" style={styles.icon} />
+            </Animated.View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { animateIcon(iconBounce); navigation.navigate('Account'); }}>
+            <Animated.View style={{ transform: [{ scale: iconBounce }] }}>
+              <Icon name="account-circle" size={26} color="#fff" style={styles.icon} />
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
+      <Animated.View style={[styles.searchContainer, { transform: [{ scale: searchBarScale }] }]}>
         <TextInput
           placeholder="Search for products..."
           placeholderTextColor="#999"
           style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onSubmitEditing={handleSearch}
         />
-        <TouchableOpacity style={styles.searchIcon}>
+        <TouchableOpacity onPress={handleSearch} style={styles.searchIcon}>
           <Icon name="search" size={24} color="#000" />
         </TouchableOpacity>
-      </View>
-
-      {/* Icons */}
-      <View style={styles.iconContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
-          <Icon name="notifications" size={24} color="#000" style={styles.icon} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('Wishlist')}>
-          <Icon name="favorite" size={24} color="#000" style={styles.icon} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('Account')}>
-          <Icon name="account-circle" size={24} color="#000" style={styles.icon} />
-        </TouchableOpacity>
-      </View>
-    </View>
+      </Animated.View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
+  headerContainer: {
     paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
   },
-  searchContainer: {
-    flex: 1,
+  topSection: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginRight: 16,
+    paddingHorizontal: 15,
+    marginBottom: 10,
   },
-  searchInput: {
-    flex: 1,
+  logo: {
+    width: 50,
     height: 40,
-    fontSize: 16,
-    color: '#000',
-  },
-  searchIcon: {
-    marginLeft: 10,
+    borderRadius: 10,
+    resizeMode: 'contain',
   },
   iconContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   icon: {
-    marginLeft: 16,
+    marginLeft: 20,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff', // White background for search bar
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    marginHorizontal: 15,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    fontSize: 16,
+    color: '#000', // Black text for search input
+  },
+  searchIcon: {
+    marginLeft: 10,
   },
 });
 

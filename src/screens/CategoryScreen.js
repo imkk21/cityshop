@@ -14,6 +14,8 @@ import {
 import { createClient } from '@supabase/supabase-js';
 import { CONFIG } from '../utils/config'; // Adjust the path as needed
 import { AuthContext } from '../context/AuthContext'; // Import AuthContext
+import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
+import CustomHeader from '../context/CustomHeader'; // Import your CustomHeader component
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 const { width, height } = Dimensions.get('window');
@@ -22,6 +24,8 @@ const CategoryScreen = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [refreshing, setRefreshing] = useState(false); // For pull-to-refresh
   const [page, setPage] = useState(1); // For pagination
@@ -160,31 +164,51 @@ const CategoryScreen = ({ navigation }) => {
       </View>
     </TouchableOpacity>
   );
+  //handle searching
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    const filtered = products.filter((product) =>
+      product.name.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredProducts(filtered);
+  };
 
   // Render footer for pagination loading
   const renderFooter = () => {
     if (!hasMore) return null;
     return (
       <View style={styles.footer}>
-        <ActivityIndicator size="small" color="#6A82FB" />
+        <ActivityIndicator size="small" color="#000000" />
       </View>
     );
   };
 
   if (loading && !refreshing) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6A82FB" />
-      </View>
+      <LinearGradient
+        colors={['#FFFFFF', '#FFFFFF']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.loadingContainer}
+      >
+        <ActivityIndicator size="large" color="#FFFFFF" />
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#FFFFFF', '#FFFFFF']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 2, y: 1 }}
+      style={styles.container}
+    >
+      {/* Add CustomHeader */}
+      <CustomHeader navigation={navigation} onSearch={(handleSearch)} />
+
       {/* Show Category List if no category is selected */}
       {!selectedCategory && (
         <>
-          <Text style={styles.sectionTitle}>Categories</Text>
           <FlatList
             data={categories}
             renderItem={renderCategoryItem}
@@ -215,7 +239,7 @@ const CategoryScreen = ({ navigation }) => {
             keyExtractor={(item) => item.id.toString()}
             style={{ opacity: fadeAnim }}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FFFFFF']} tintColor="#FFFFFF" />
             }
             onEndReached={loadMoreProducts} // Load more products on scroll
             onEndReachedThreshold={0.5} // Trigger loadMoreProducts when 50% of the list is scrolled
@@ -223,21 +247,21 @@ const CategoryScreen = ({ navigation }) => {
           />
         </>
       )}
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#f8f8f8',
+    //padding: 16,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#000000',
     marginBottom: 10,
+    marginHorizontal: 10,
   },
   categoryList: {
     flex: 1,
@@ -246,16 +270,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   categoryItem: {
-    width: width / 2 - 24, // Two columns with padding
-    backgroundColor: '#fff',
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 10,
-    shadowColor: '#000',
+    width: width / 2- 24, // Two columns with padding
+    backgroundColor: '#333',
+    padding: 19,
+    marginBottom: 16,
+    marginTop: 10,
+    marginHorizontal: 12,
+    borderRadius: 18,
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowRadius: 10,
+    elevation: 1,
   },
   selectedCategoryItem: {
     backgroundColor: '#6A82FB',
@@ -263,15 +289,15 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   selectedCategoryText: {
-    color: '#fff',
+    color: '#FFFFFF',
   },
   productItem: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: 15,
     marginBottom: 10,
     borderRadius: 10,
@@ -314,7 +340,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6A82FB',
+    color: '#000000',
   },
   footer: {
     padding: 10,
