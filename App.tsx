@@ -22,6 +22,7 @@ import ProductDetail from './src/screens/ProductDetail';
 import WishlistScreen from './src/screens/WishlistScreen';
 import Settings from './src/screens/Settings';
 import Notifications from './src/screens/Notifications';
+import Payment from './src/screens/Payment';
 
 const Stack = createStackNavigator();
 
@@ -109,6 +110,11 @@ const App = () => {
             name="ShopkeeperProductList" 
             component={ShopkeeperProductList} 
             options={{ headerShown: true, title: 'Product Details' }} 
+          />
+          <Stack.Screen 
+            name="Payment" 
+            component={Payment} 
+            options={{ headerShown: true, title: 'Payment' }}
           />
         </Stack.Navigator>
       </NavigationContainer>

@@ -124,7 +124,7 @@ const ShopkeeperLogin = () => {
               <TextInput
                 value={emailPrefix}
                 onChangeText={handleEmailChange}
-                placeholder="YOUR EMAIL"
+                placeholder="EMAIL"
                 placeholderTextColor="#999"
                 style={styles.emailInput}
                 keyboardType="email-address"

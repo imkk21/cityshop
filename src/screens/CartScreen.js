@@ -9,28 +9,31 @@ import {
   Dimensions,
   ScrollView,
   Image,
+  SafeAreaView,
 } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 import { CONFIG } from '../utils/config';
 import { AuthContext } from '../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
+import LinearGradient from 'react-native-linear-gradient';
+import RazorpayCheckout from 'react-native-razorpay';
+import Toast from 'react-native-toast-message';
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const CartScreen = ({ navigation }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState('Credit Card');
   const { user } = useContext(AuthContext);
   const userId = user?.id;
 
+  const RAZORPAY_KEY = 'rzp_test_cmA2ecsVLey6PX';
+
   const fetchCartItems = useCallback(async () => {
     try {
-      // Fetch the user's cart
       const { data: cart, error: fetchCartError } = await supabase
         .from('carts')
         .select('id')
@@ -38,16 +41,14 @@ const CartScreen = ({ navigation }) => {
 
       if (fetchCartError) throw fetchCartError;
 
-      // If the user doesn't have a cart, set cartItems to an empty array
       if (!cart || cart.length === 0) {
         setCartItems([]);
         setLoading(false);
         return;
       }
 
-      const cartId = cart[0].id; // Use the first cart (assuming one cart per user)
+      const cartId = cart[0].id;
 
-      // Fetch cart items with product details
       const { data: cartItems, error: fetchCartItemsError } = await supabase
         .from('cart_items')
         .select('*, products(*)')
@@ -58,13 +59,16 @@ const CartScreen = ({ navigation }) => {
       setCartItems(cartItems);
     } catch (error) {
       console.error('Error fetching cart items:', error);
-      Alert.alert('Error', 'Failed to fetch cart items.');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to fetch cart items.',
+      });
     } finally {
       setLoading(false);
     }
   }, [userId]);
 
-  // Refresh cart when the screen comes into focus
   useFocusEffect(
     useCallback(() => {
       if (userId) {
@@ -75,7 +79,6 @@ const CartScreen = ({ navigation }) => {
 
   const updateQuantity = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) {
-      // If quantity is less than 1, remove the item from the cart
       removeFromCart(cartItemId);
       return;
     }
@@ -88,11 +91,14 @@ const CartScreen = ({ navigation }) => {
 
       if (error) throw error;
 
-      // Refresh the cart items after updating the quantity
       fetchCartItems();
     } catch (error) {
       console.error('Error updating quantity:', error);
-      Alert.alert('Error', 'Failed to update quantity.');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to update quantity.',
+      });
     }
   };
 
@@ -105,12 +111,121 @@ const CartScreen = ({ navigation }) => {
 
       if (error) throw error;
 
-      Alert.alert('Success', 'Item removed from cart.');
-      fetchCartItems(); // Refresh the cart items
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'Item removed from cart.',
+      });
+      fetchCartItems();
     } catch (error) {
       console.error('Error removing item from cart:', error);
-      Alert.alert('Error', 'Failed to remove item from cart.');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to remove item from cart.',
+      });
     }
+  };
+
+  const calculateTotalPrice = () => {
+    return cartItems.reduce((total, item) => total + item.products.price * item.quantity, 0);
+  };
+
+  const deliveryCharge = 0.0;
+  const subtotal = calculateTotalPrice();
+  const total = subtotal + deliveryCharge;
+
+  const clearCart = async () => {
+    try {
+      // Fetch the user's cart
+      const { data: cart, error: fetchCartError } = await supabase
+        .from('carts')
+        .select('id')
+        .eq('user_id', userId);
+
+      if (fetchCartError) throw fetchCartError;
+
+      if (!cart || cart.length === 0) {
+        return; // No cart to clear
+      }
+
+      const cartId = cart[0].id;
+
+      // Delete all items in the cart
+      const { error: deleteError } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('cart_id', cartId);
+
+      if (deleteError) throw deleteError;
+
+      // Refresh the cart items
+      fetchCartItems();
+
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'Cart cleared after successful payment.',
+      });
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to clear cart.',
+      });
+    }
+  };
+
+  const handleCheckout = async () => {
+    Alert.alert(
+      'Select Payment Method',
+      'Choose your payment method',
+      [
+        { text: 'Credit Card', onPress: () => initiatePayment('Credit Card') },
+        { text: 'Debit Card', onPress: () => initiatePayment('Debit Card') },
+        { text: 'UPI', onPress: () => initiatePayment('UPI') },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const initiatePayment = (paymentMethod) => {
+    const options = {
+      description: 'Payment for your order',
+      image: 'https://nbzuqafgapyfiqjjrsts.supabase.co/storage/v1/object/public/product-images//logo.jpeg',
+      currency: 'INR',
+      key: RAZORPAY_KEY,
+      amount: total * 100,
+      name: 'CityShop',
+      prefill: {
+        email: user?.email || 'user@example.com',
+        contact: '9999999999',
+        name: user?.name || 'User Name',
+      },
+      theme: { color: '#000000' },
+    };
+
+    RazorpayCheckout.open(options)
+      .then((data) => {
+        Toast.show({
+          type: 'success',
+          text1: 'Payment Successful',
+          text2: `Payment ID: ${data.razorpay_payment_id}`,
+        });
+        // Clear the cart after successful payment
+        clearCart();
+        // Optionally, navigate to a success screen
+        navigation.navigate('OrderSuccess');
+      })
+      .catch((error) => {
+        Toast.show({
+          type: 'error',
+          text1: 'Payment Failed',
+          text2: error.description || 'Something went wrong',
+        });
+      });
   };
 
   const renderCartItem = ({ item }) => (
@@ -144,14 +259,6 @@ const CartScreen = ({ navigation }) => {
     </View>
   );
 
-  const calculateTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + item.products.price * item.quantity, 0);
-  };
-
-  const deliveryCharge = 10.0; // Fixed delivery charge
-  const subtotal = calculateTotalPrice();
-  const total = subtotal + deliveryCharge;
-
   if (loading) {
     return (
       <LinearGradient
@@ -166,89 +273,78 @@ const CartScreen = ({ navigation }) => {
   }
 
   return (
-    <LinearGradient
-      colors={['#FFFFFF', '#FFFFFF']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 2, y: 1 }}
-      style={styles.container}
-    >
-      <ScrollView style={styles.scrollContainer}>
-        {/* Header with Back Button */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-            <Icon name="arrow-back" size={24} color="#000000" />
+    <SafeAreaView style={styles.safeArea}>
+      <LinearGradient
+        colors={['#FFFFFF', '#FFFFFF']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 2, y: 1 }}
+        style={styles.container}
+      >
+        <ScrollView
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+              <Icon name="arrow-back" size={24} color="#000000" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>My Cart</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+              <Text style={styles.addMoreText}>Add more</Text>
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={cartItems}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderCartItem}
+            scrollEnabled={false}
+          />
+
+          <View style={styles.summaryContainer}>
+            <Text style={styles.summaryTitle}>Order Summary</Text>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Items:</Text>
+              <Text style={styles.summaryValue}>{cartItems.length}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Delivery charge:</Text>
+              <Text style={styles.summaryValue}>Rs. {deliveryCharge.toFixed(2)}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Sub Total:</Text>
+              <Text style={styles.summaryValue}>Rs. {subtotal.toFixed(2)}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Total:</Text>
+              <Text style={styles.summaryValue}>Rs. {total.toFixed(2)}</Text>
+            </View>
+          </View>
+
+          <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
+            <Text style={styles.checkoutButtonText}>Proceed To Checkout</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Cart</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-            <Text style={styles.addMoreText}>Add more</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Cart Items */}
-        <FlatList
-          data={cartItems}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderCartItem}
-          scrollEnabled={false} // Disable scrolling for FlatList inside ScrollView
-        />
-
-        {/* Order Summary */}
-        <View style={styles.summaryContainer}>
-          <Text style={styles.summaryTitle}>Order Summary</Text>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Items:</Text>
-            <Text style={styles.summaryValue}>{cartItems.length}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Delivery charge:</Text>
-            <Text style={styles.summaryValue}>Rs. {deliveryCharge.toFixed(2)}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Sub Total:</Text>
-            <Text style={styles.summaryValue}>Rs. {subtotal.toFixed(2)}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Total:</Text>
-            <Text style={styles.summaryValue}>Rs. {total.toFixed(2)}</Text>
-          </View>
-        </View>
-
-        {/* Payment Method */}
-        <View style={styles.paymentContainer}>
-          <Text style={styles.paymentTitle}>Payment Method</Text>
-          <TouchableOpacity
-            style={styles.paymentOption}
-            onPress={() => {
-              // Open a modal or navigate to a payment method selection screen
-              Alert.alert('Select Payment Method', 'Choose your payment method', [
-                { text: 'Credit Card', onPress: () => setPaymentMethod('Credit Card') },
-                { text: 'Debit Card', onPress: () => setPaymentMethod('Debit Card') },
-                { text: 'UPI', onPress: () => setPaymentMethod('UPI') },
-                { text: 'Cancel', style: 'cancel' },
-              ]);
-            }}
-          >
-            <Text style={styles.paymentText}>{paymentMethod}</Text>
-            <Icon name="keyboard-arrow-down" size={24} color="#666" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Checkout Button */}
-        <TouchableOpacity style={styles.checkoutButton} onPress={() => Alert.alert('Checkout', 'Proceeding to checkout...')}>
-          <Text style={styles.checkoutButtonText}>Proceed To Checkout</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </LinearGradient>
+        </ScrollView>
+      </LinearGradient>
+      <Toast />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
   container: {
     flex: 1,
   },
   scrollContainer: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+  },
+  scrollContent: {
+    paddingBottom: 100, // Add padding to avoid overlap with bottom tabs
   },
   header: {
     flexDirection: 'row',
@@ -260,7 +356,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#000000',
-    marginRight:140,
+    marginRight: 140,
   },
   addMoreText: {
     fontSize: 16,
@@ -350,41 +446,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  paymentContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 15,
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  paymentTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-  },
-  paymentOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
-    padding: 10,
-  },
-  paymentText: {
-    fontSize: 14,
-    color: '#333',
-  },
   checkoutButton: {
     backgroundColor: 'rgb(2, 12, 28)',
     borderRadius: 10,
     padding: 15,
     alignItems: 'center',
     marginTop: 20,
+    marginBottom: 40, // Add margin to avoid overlap with bottom tabs
   },
   checkoutButtonText: {
     color: '#FFFFFF',
