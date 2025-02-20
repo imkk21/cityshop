@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Animated,
-  Dimensions,
   StyleSheet,
+  ImageBackground,
 } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 import { CONFIG } from '../utils/config';
@@ -16,8 +16,6 @@ import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
-
-const { width } = Dimensions.get('window');
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
@@ -103,162 +101,191 @@ const ShopkeeperLogin = () => {
   };
 
   return (
-    <LinearGradient
-      colors={['#6a11cb', '#2575fc']}
-      style={styles.container}
+    <ImageBackground
+      source={require('../assets/download.jpeg')} // Replace with your background image
+      style={styles.background}
+      resizeMode="cover"
     >
-      <View style={styles.content}>
-        <Text style={styles.title}>Shopkeeper Login</Text>
+      {/* Gradient Overlay */}
+      <LinearGradient
+        colors={['rgba(0, 0, 0, 0.6)', 'rgba(0, 0, 0, 0.2)']}
+        style={styles.gradientOverlay}
+      >
+        <View style={styles.overlay}>
+          {/* Welcome Text */}
+          <View style={styles.welcomeContainer}>
+            <Text style={styles.welcomeText}>Welcome Back, Shopkeeper</Text>
+            <Text style={styles.loginText}>Login to your shopkeeper account</Text>
+          </View>
 
-        {/* Email Input */}
-        <View style={styles.emailContainer}>
-          <TextInput
-            style={styles.emailInput}
-            placeholder="Email"
-            value={emailPrefix}
-            onChangeText={handleEmailChange}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            placeholderTextColor="#999"
-          />
-          <Text style={styles.emailDomain}>@cityshop.ac.in</Text>
-        </View>
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
+            <View style={styles.emailInputContainer}>
+              <TextInput
+                value={emailPrefix}
+                onChangeText={handleEmailChange}
+                placeholder="YOUR EMAIL"
+                placeholderTextColor="#999"
+                style={styles.emailInput}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              <Text style={styles.emailDomain}>@cityshop.ac.in</Text>
+            </View>
+            <View style={styles.underline} />
+          </View>
 
-        {/* Password Input */}
-        <View style={styles.passwordContainer}>
-          <TextInput
-            style={styles.passwordInput}
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword}
-            placeholderTextColor="#999"
-          />
+          {/* Password Input */}
+          <View style={styles.inputContainer}>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="PASSWORD"
+                placeholderTextColor="#999"
+                style={styles.input}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                <Icon
+                  name={showPassword ? 'visibility-off' : 'visibility'}
+                  size={20}
+                  color="#999"
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.underline} />
+          </View>
+
+
+          {/* Login Button */}
           <TouchableOpacity
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.eyeIcon}
+            onPress={handleLogin}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            disabled={loading}
           >
-            <Icon
-              name={showPassword ? 'visibility-off' : 'visibility'}
-              size={24}
-              color="#666"
-            />
+            <Animated.View
+              style={[
+                styles.loginButton,
+                { transform: [{ scale: buttonScale }] },
+              ]}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.loginButtonText}>SIGN IN</Text>
+              )}
+            </Animated.View>
+          </TouchableOpacity>
+
+          {/* Create Account Link */}
+          <TouchableOpacity onPress={() => navigation.navigate('ShopkeeperSignUp')}>
+            <Text style={styles.createAccountText}>Don't have an account? Sign up</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Login Button */}
-        <TouchableOpacity
-          onPress={handleLogin}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          disabled={loading}
-        >
-          <Animated.View
-            style={[
-              styles.loginButton,
-              { transform: [{ scale: buttonScale }] },
-            ]}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.loginButtonText}>Login</Text>
-            )}
-          </Animated.View>
-        </TouchableOpacity>
-
-        {/* Additional Options */}
-        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-          <Text style={styles.link}>Forgot Password?</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('ShopkeeperSignUp')}>
-          <Text style={styles.link}>New User? Sign Up</Text>
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  content: {
-    width: '90%',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
+  gradientOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 5,
   },
-  title: {
-    fontSize: 28,
+  welcomeContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  welcomeText: {
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#333',
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
   },
-  emailContainer: {
+  loginText: {
+    fontSize: 16,
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
+  },
+  inputContainer: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  emailInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
   },
   emailInput: {
     flex: 1,
     height: 50,
     fontSize: 16,
-    color: '#333',
+    color: '#fff',
   },
   emailDomain: {
     fontSize: 16,
-    color: '#666',
+    color: '#fff',
+    marginLeft: 5,
+  },
+  underline: {
+    height: 1,
+    backgroundColor: '#fff',
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
   },
-  passwordInput: {
+  input: {
     flex: 1,
     height: 50,
     fontSize: 16,
-    color: '#333',
+    color: '#fff',
   },
   eyeIcon: {
-    padding: 10,
+    position: 'absolute',
+    right: 0,
+  },
+  forgotText: {
+    color: '#fff',
+    fontSize: 14,
+    textAlign: 'right',
+    marginBottom: 20,
   },
   loginButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
+    width: '100%',
+    height: 50,
+    backgroundColor: '#ff6f61',
     borderRadius: 10,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   loginButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  link: {
-    marginTop: 10,
-    color: '#007bff',
-    textAlign: 'center',
+  createAccountText: {
+    color: '#fff',
     fontSize: 16,
+    textAlign: 'center',
   },
 });
 

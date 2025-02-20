@@ -8,16 +8,15 @@ import {
   ActivityIndicator,
   Animated,
   ScrollView,
-  Dimensions,
   StyleSheet,
+  ImageBackground,
 } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 import { CONFIG } from '../utils/config';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
-
-const { width } = Dimensions.get('window');
+import DateTimePickerModal from 'react-native-modal-datetime-picker'; // Import DateTimePickerModal
 
 const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
@@ -27,7 +26,7 @@ const ShopkeeperSignUp = () => {
   const [emailPrefix, setEmailPrefix] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [dob, setDob] = useState('');
+  const [dob, setDob] = useState(null); // Change to null initially
   const [gender, setGender] = useState('');
   const [country, setCountry] = useState('');
   const [state, setState] = useState('');
@@ -39,6 +38,7 @@ const ShopkeeperSignUp = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false); // State for date picker visibility
   const navigation = useNavigation();
 
   // Animation value for button press
@@ -73,6 +73,14 @@ const ShopkeeperSignUp = () => {
     return `${emailPrefix}@cityshop.ac.in`;
   };
 
+  // Handle date change from DateTimePickerModal
+  const handleDateChange = (selectedDate) => {
+    setShowDatePicker(false); // Hide the date picker
+    if (selectedDate) {
+      setDob(selectedDate); // Set the selected date
+    }
+  };
+
   const handleSignUp = async () => {
     if (!termsAccepted) {
       Alert.alert('Error', 'You must accept the terms and conditions.');
@@ -100,7 +108,7 @@ const ShopkeeperSignUp = () => {
           last_name: lastName,
           email,
           phone,
-          dob,
+          dob: dob ? dob.toISOString().split('T')[0] : null, // Format date as YYYY-MM-DD
           gender,
           country,
           state,
@@ -126,263 +134,344 @@ const ShopkeeperSignUp = () => {
   };
 
   return (
-    <LinearGradient
-      colors={['#6a11cb', '#2575fc']}
-      style={styles.container}
+    <ImageBackground
+      source={require('../assets/download.jpeg')} // Replace with your background image
+      style={styles.background}
+      resizeMode="cover"
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>Shopkeeper Sign Up</Text>
+      {/* Gradient Overlay */}
+      <LinearGradient
+        colors={['rgba(0, 0, 0, 0.6)', 'rgba(0, 0, 0, 0.2)']}
+        style={styles.gradientOverlay}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.overlay}>
+            {/* Welcome Text */}
+            <View style={styles.welcomeContainer}>
+              <Text style={styles.welcomeText}>Create Shopkeeper Account</Text>
+              <Text style={styles.loginText}>Let's Register Your Shop</Text>
+            </View>
 
-        {/* First Name */}
-        <TextInput
-          style={styles.input}
-          placeholder="First Name"
-          value={firstName}
-          onChangeText={setFirstName}
-          placeholderTextColor="#999"
-        />
+            {/* First Name */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholder="First Name"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* Last Name */}
-        <TextInput
-          style={styles.input}
-          placeholder="Last Name"
-          value={lastName}
-          onChangeText={setLastName}
-          placeholderTextColor="#999"
-        />
+            {/* Last Name */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder="Last Name"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* Email */}
-        <View style={styles.emailContainer}>
-          <TextInput
-            style={styles.emailInput}
-            placeholder="Email"
-            value={emailPrefix}
-            onChangeText={handleEmailChange}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            placeholderTextColor="#999"
-          />
-          <Text style={styles.emailDomain}>@cityshop.ac.in</Text>
-        </View>
+            {/* Email */}
+            <View style={styles.inputContainer}>
+              <View style={styles.emailInputContainer}>
+                <TextInput
+                  value={emailPrefix}
+                  onChangeText={handleEmailChange}
+                  placeholder="Email"
+                  placeholderTextColor="#999"
+                  style={styles.emailInput}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                <Text style={styles.emailDomain}>@cityshop.ac.in</Text>
+              </View>
+              <View style={styles.underline} />
+            </View>
 
-        {/* Password */}
-        <View style={styles.passwordContainer}>
-          <TextInput
-            style={styles.passwordInput}
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword}
-            placeholderTextColor="#999"
-          />
-          <TouchableOpacity
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.eyeIcon}
-          >
-            <Icon
-              name={showPassword ? 'visibility-off' : 'visibility'}
-              size={24}
-              color="#666"
-            />
-          </TouchableOpacity>
-        </View>
+            {/* Password */}
+            <View style={styles.inputContainer}>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Password"
+                  placeholderTextColor="#999"
+                  style={styles.input}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                >
+                  <Icon
+                    name={showPassword ? 'visibility-off' : 'visibility'}
+                    size={20}
+                    color="#999"
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.underline} />
+            </View>
 
-        {/* Phone */}
-        <TextInput
-          style={styles.input}
-          placeholder="Phone"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          placeholderTextColor="#999"
-        />
+            {/* Phone */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={phone}
+                onChangeText={setPhone}
+                placeholder="Phone"
+                placeholderTextColor="#999"
+                style={styles.input}
+                keyboardType="phone-pad"
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* Date of Birth */}
-        <TextInput
-          style={styles.input}
-          placeholder="Date of Birth (YYYY-MM-DD)"
-          value={dob}
-          onChangeText={setDob}
-          placeholderTextColor="#999"
-        />
+            {/* Date of Birth */}
+            <View style={styles.inputContainer}>
+              <TouchableOpacity
+                onPress={() => setShowDatePicker(true)}
+                style={styles.dateInput}
+              >
+                <Text style={[styles.dateText, !dob && { color: '#999' }]}>
+                  {dob ? dob.toLocaleDateString() : 'Date of Birth'}
+                </Text>
+              </TouchableOpacity>
+              <View style={styles.underline} />
+            </View>
 
-        {/* Gender */}
-        <TextInput
-          style={styles.input}
-          placeholder="Gender"
-          value={gender}
-          onChangeText={setGender}
-          placeholderTextColor="#999"
-        />
+            {/* Gender */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={gender}
+                onChangeText={setGender}
+                placeholder="Gender"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* Country */}
-        <TextInput
-          style={styles.input}
-          placeholder="Country"
-          value={country}
-          onChangeText={setCountry}
-          placeholderTextColor="#999"
-        />
+            {/* Country */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={country}
+                onChangeText={setCountry}
+                placeholder="Country"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* State */}
-        <TextInput
-          style={styles.input}
-          placeholder="State"
-          value={state}
-          onChangeText={setState}
-          placeholderTextColor="#999"
-        />
+            {/* State */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={state}
+                onChangeText={setState}
+                placeholder="State"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* City */}
-        <TextInput
-          style={styles.input}
-          placeholder="City"
-          value={city}
-          onChangeText={setCity}
-          placeholderTextColor="#999"
-        />
+            {/* City */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={city}
+                onChangeText={setCity}
+                placeholder="City"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* Shop Name */}
-        <TextInput
-          style={styles.input}
-          placeholder="Shop Name"
-          value={shopName}
-          onChangeText={setShopName}
-          placeholderTextColor="#999"
-        />
+            {/* Shop Name */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={shopName}
+                onChangeText={setShopName}
+                placeholder="Shop Name"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* Shop Address */}
-        <TextInput
-          style={styles.input}
-          placeholder="Shop Address"
-          value={shopAddress}
-          onChangeText={setShopAddress}
-          placeholderTextColor="#999"
-        />
+            {/* Shop Address */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={shopAddress}
+                onChangeText={setShopAddress}
+                placeholder="Shop Address"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* GST Number */}
-        <TextInput
-          style={styles.input}
-          placeholder="GST Number"
-          value={gstNumber}
-          onChangeText={setGstNumber}
-          placeholderTextColor="#999"
-        />
+            {/* GST Number */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={gstNumber}
+                onChangeText={setGstNumber}
+                placeholder="GST Number"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* Shop Category */}
-        <TextInput
-          style={styles.input}
-          placeholder="Shop Category"
-          value={shopCategory}
-          onChangeText={setShopCategory}
-          placeholderTextColor="#999"
-        />
+            {/* Shop Category */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                value={shopCategory}
+                onChangeText={setShopCategory}
+                placeholder="Shop Category"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+              <View style={styles.underline} />
+            </View>
 
-        {/* Terms & Conditions */}
-        <TouchableOpacity
-          style={styles.termsContainer}
-          onPress={() => setTermsAccepted(!termsAccepted)}
-        >
-          <Text style={styles.termsText}>
-            {termsAccepted ? '✅' : '⬜'} Accept Terms & Conditions
-          </Text>
-        </TouchableOpacity>
+            {/* Terms & Conditions */}
+            <TouchableOpacity
+              style={styles.termsContainer}
+              onPress={() => setTermsAccepted(!termsAccepted)}
+            >
+              <Text style={styles.termsText}>
+                {termsAccepted ? '✅' : '⬜'} Accept Terms & Conditions
+              </Text>
+            </TouchableOpacity>
 
-        {/* Sign Up Button */}
-        <TouchableOpacity
-          onPress={handleSignUp}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          disabled={loading}
-        >
-          <Animated.View
-            style={[
-              styles.signUpButton,
-              { transform: [{ scale: buttonScale }] },
-            ]}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.signUpButtonText}>Sign Up</Text>
-            )}
-          </Animated.View>
-        </TouchableOpacity>
+            {/* Sign Up Button */}
+            <TouchableOpacity
+              onPress={handleSignUp}
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              disabled={loading}
+            >
+              <Animated.View
+                style={[
+                  styles.signUpButton,
+                  { transform: [{ scale: buttonScale }] },
+                ]}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.signUpButtonText}>Sign Up</Text>
+                )}
+              </Animated.View>
+            </TouchableOpacity>
 
-        {/* Login Link */}
-        <TouchableOpacity onPress={() => navigation.navigate('ShopkeeperLogin')}>
-          <Text style={styles.link}>Already have an account? Log in</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </LinearGradient>
+            {/* Login Link */}
+            <TouchableOpacity onPress={() => navigation.navigate('ShopkeeperLogin')}>
+              <Text style={styles.link}>Already have an account? Log in</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </LinearGradient>
+
+      {/* Date Picker Modal */}
+      <DateTimePickerModal
+        isVisible={showDatePicker}
+        mode="date"
+        onConfirm={handleDateChange}
+        onCancel={() => setShowDatePicker(false)}
+      />
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
+    justifyContent: 'center',
+  },
+  gradientOverlay: {
+    flex: 1,
+    justifyContent: 'center',
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
   },
-  title: {
-    fontSize: 28,
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  welcomeContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  welcomeText: {
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
     color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
+  },
+  loginText: {
+    fontSize: 16,
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
+  },
+  inputContainer: {
+    width: '100%',
+    marginBottom: 20,
   },
   input: {
+    width: '100%',
     height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    marginBottom: 15,
-    paddingHorizontal: 15,
-    borderRadius: 10,
-    backgroundColor: '#fff',
     fontSize: 16,
-    color: '#333',
+    color: '#fff',
   },
-  emailContainer: {
+  emailInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
   },
   emailInput: {
     flex: 1,
     height: 50,
     fontSize: 16,
-    color: '#333',
+    color: '#fff',
   },
   emailDomain: {
     fontSize: 16,
-    color: '#666',
+    color: '#fff',
+    marginLeft: 5,
+  },
+  underline: {
+    height: 1,
+    backgroundColor: '#fff',
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
-  },
-  passwordInput: {
-    flex: 1,
-    height: 50,
-    fontSize: 16,
-    color: '#333',
   },
   eyeIcon: {
-    padding: 10,
+    position: 'absolute',
+    right: 0,
+  },
+  dateInput: {
+    width: '100%',
+    height: 50,
+    justifyContent: 'center',
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#fff',
   },
   termsContainer: {
     flexDirection: 'row',
@@ -394,11 +483,13 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   signUpButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
+    width: '100%',
+    height: 50,
+    backgroundColor: '#ff6f61',
     borderRadius: 10,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   signUpButtonText: {
     color: '#fff',
@@ -406,10 +497,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   link: {
-    marginTop: 10,
     color: '#fff',
-    textAlign: 'center',
     fontSize: 16,
+    textAlign: 'center',
   },
 });
 

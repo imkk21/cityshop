@@ -147,7 +147,7 @@ const SignUpScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={require('../assets/login-background.jpg')} // Replace with your background image
+      source={require('../assets/loginsignupbackground.jpg')} // Replace with your background image
       style={styles.background}
       resizeMode="cover"
     >
@@ -158,9 +158,10 @@ const SignUpScreen = ({ navigation }) => {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.overlay}>
-            <Animatable.View animation="fadeInDown" duration={1500} style={styles.titleContainer}>
-              <Text style={styles.title}>SIGN UP</Text>
-              <Text style={styles.subtitle}>Let's Register You</Text>
+            {/* Welcome Text */}
+            <Animatable.View animation="fadeInDown" duration={1500} style={styles.welcomeContainer}>
+              <Text style={styles.welcomeText}>Create Account</Text>
+              <Text style={styles.loginText}>Let's Register You</Text>
             </Animatable.View>
 
             {/* First Name Input */}
@@ -310,7 +311,7 @@ const SignUpScreen = ({ navigation }) => {
             {/* Login Link */}
             <Animatable.View animation="fadeInUp" duration={1500} style={styles.linkContainer}>
               <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                <Text style={styles.linkText}>Already have an account?</Text>
+                <Text style={styles.linkText}>Already have an account? Login</Text>
               </TouchableOpacity>
             </Animatable.View>
           </View>
@@ -338,20 +339,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
-  titleContainer: {
+  welcomeContainer: {
     alignItems: 'center',
     marginBottom: 40,
   },
-  title: {
-    fontSize: 32,
+  welcomeText: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 5,
   },
-  subtitle: {
-    fontSize: 18,
+  loginText: {
+    fontSize: 16,
     color: '#fff',
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },

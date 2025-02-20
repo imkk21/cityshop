@@ -5,7 +5,8 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   Animated, 
-  ImageBackground 
+  ImageBackground,
+  Image 
 } from 'react-native';
 import LottieView from 'lottie-react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -36,11 +37,22 @@ const RoleSelectionScreen = ({ navigation }) => {
     >
       {/* Gradient Overlay for smooth blending */}
       <LinearGradient 
-        colors={['rgba(0, 0, 0, 0.8)', 'rgba(0, 0, 0, 0.4)', 'rgba(0, 0, 0, 0.1)']}
+        colors={['rgba(0, 0, 0, 0.9)', 'rgba(0, 0, 0, 0.5)', 'rgba(0, 0, 0, 0.2)']} // Adjusted for darker top
         style={styles.gradientOverlay}
       />
 
       <View style={styles.container}>
+        {/* Logo with Background */}
+        <Animated.View style={[styles.logoContainer, { opacity: fadeAnim }]}>
+          <View style={styles.logoBackground}>
+            <Image 
+              source={require('../assets/logo.png')} // Replace with your logo file path
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+        </Animated.View>
+
         <Animated.Text style={[styles.title, { opacity: fadeAnim }]}>
           Welcome to CityShop
         </Animated.Text>
@@ -98,6 +110,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+  },
+  logoContainer: {
+    marginBottom: 20,
+  },
+  logoBackground: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', // White semi-transparent background
+    borderRadius: 10, // Rounded corners
+    padding: 10, // Padding around the logo
+    shadowColor: '#000', // Shadow for depth
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5, // For Android shadow
+  },
+  logo: {
+    width: 150, // Adjust as needed
+    height: 150, // Adjust as needed
   },
   title: {
     fontSize: 36,

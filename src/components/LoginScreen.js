@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useContext, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -131,26 +131,20 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={require('../assets/login-background.jpg')} // Replace with your background image
+      source={require('../assets/loginsignupbackground.jpg')} // Replace with your background image
       style={styles.background}
       resizeMode="cover"
     >
       {/* Gradient Overlay */}
       <LinearGradient
-        colors={['rgba(0, 0, 0, 0.6)', 'rgba(0, 0, 0, 0.2)']}
+        colors={['rgba(0, 0, 0, 0.6)', 'rgba(24, 23, 23, 0.2)']}
         style={styles.gradientOverlay}
       >
         <View style={styles.overlay}>
-          {/* App Logo with Animation */}
-          <Animatable.View animation="fadeInDown" duration={1500} style={styles.logoContainer}>
-            <View style={styles.logoBackground}>
-              <Image
-                source={require('../assets/logo.jpeg')} // Replace with your app logo
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={styles.appName}>CityShop</Text>
+          {/* Welcome Text */}
+          <Animatable.View animation="fadeInDown" duration={1500} style={styles.welcomeContainer}>
+            <Text style={styles.welcomeText}>Welcome Back</Text>
+            <Text style={styles.loginText}>Login to your account</Text>
           </Animatable.View>
 
           {/* Email Input */}
@@ -161,7 +155,7 @@ const LoginScreen = ({ navigation }) => {
                 setEmail(text);
                 setEmailError('');
               }}
-              placeholder="YOUR EMAIL"
+              placeholder="EMAIL"
               placeholderTextColor="#999"
               style={styles.input}
               keyboardType="email-address"
@@ -193,10 +187,14 @@ const LoginScreen = ({ navigation }) => {
             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
           </Animatable.View>
 
-          {/* Forgot Password Link */}
-          <Animatable.View animation="fadeInUp" duration={1500} style={styles.forgotContainer}>
+          {/* Remember Me and Forgot Password */}
+          <Animatable.View animation="fadeInUp" duration={1500} style={styles.rememberForgotContainer}>
+            <TouchableOpacity style={styles.rememberMeContainer}>
+              <View style={styles.checkbox} />
+              <Text style={styles.rememberMeText}>Remember Me</Text>
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-              <Text style={styles.forgotText}>FORGOT PASSWORD?</Text>
+              <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
           </Animatable.View>
 
@@ -229,7 +227,7 @@ const LoginScreen = ({ navigation }) => {
           {/* Create Account Link */}
           <Animatable.View animation="fadeInUp" duration={1500} style={styles.createAccountContainer}>
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-              <Text style={styles.createAccountText}>CREATE AN ACCOUNT</Text>
+              <Text style={styles.createAccountText}>Don't have an account? Sign up</Text>
             </TouchableOpacity>
           </Animatable.View>
         </View>
@@ -252,30 +250,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
-  logoContainer: {
+  welcomeContainer: {
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoBackground: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent background for logo
-    borderRadius: 20,
-    padding: 20, // Increased padding for better spacing
-    shadowColor: '#000', // Shadow for logo
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5, // For Android
-  },
-  logo: {
-    width: 120, // Adjusted size
-    height: 120, // Adjusted size
-  },
-  appName: {
-    fontSize: 32,
+  welcomeText: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-    marginTop: 10,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)', // Shadow for text
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
+  },
+  loginText: {
+    fontSize: 16,
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 5,
   },
@@ -301,13 +291,31 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
   },
-  forgotContainer: {
+  rememberForgotContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
   },
-  forgotText: {
-    color: '#fff',
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderColor: '#fff',
+    borderWidth: 1,
+    borderRadius: 3,
+    marginRight: 10,
+  },
+  rememberMeText: {
     fontSize: 14,
+    color: '#fff',
+  },
+  forgotText: {
+    fontSize: 14,
+    color: '#fff',
   },
   buttonContainer: {
     width: '100%',
