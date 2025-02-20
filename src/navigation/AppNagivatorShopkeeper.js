@@ -4,7 +4,7 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
 import ShopkeeperDashboardScreen from '../screens/ShopkeeperDashboardScreen';
 import ShopkeeperProfileScreen from '../screens/ShopkeeperProfile';
-import ProductList from '../screens/ShopkeeperProductsList';
+import ShopkeeperProductList from '../screens/ShopkeeperProductsList';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const Tab = createBottomTabNavigator();
@@ -62,7 +62,7 @@ const AppNavigatorShopkeeper = () => {
         />
         <Tab.Screen
           name="Your Products"
-          component={ProductList}
+          component={ShopkeeperProductList}
           listeners={({ navigation }) => ({
             tabPress: (e) => {
               e.preventDefault();

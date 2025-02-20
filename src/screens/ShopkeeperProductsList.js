@@ -8,11 +8,14 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Import the icon library
-import { supabase } from '../utils/supabase';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { CONFIG } from '../utils/config';
+import { createClient } from '@supabase/supabase-js';
 import { AuthContext } from '../context/AuthContext';
-import Toast from 'react-native-toast-message'; // Import the Toast component
-import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
+import Toast from 'react-native-toast-message';
+import { useFocusEffect } from '@react-navigation/native';
+
+const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
 const ShopkeeperProductList = () => {
   const { user } = useContext(AuthContext);
@@ -20,15 +23,16 @@ const ShopkeeperProductList = () => {
   const [loading, setLoading] = useState(false);
 
   const fetchProducts = useCallback(async () => {
+    if (!user?.id) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('shopkeeper_id', user?.id);
+        .eq('shopkeeper_id', user.id);
 
       if (error) throw error;
-      setProducts(data);
+      setProducts(data || []);
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -40,7 +44,6 @@ const ShopkeeperProductList = () => {
     }
   }, [user?.id]);
 
-  // Refetch products when the screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchProducts();
@@ -49,21 +52,15 @@ const ShopkeeperProductList = () => {
 
   const handleOutOfStock = async (productId) => {
     try {
-      // Option 1: Delete the product from the backend
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId);
-
+      const { error } = await supabase.from('products').delete().eq('id', productId);
       if (error) throw error;
-      fetchProducts(); // Refetch products after deletion
+      fetchProducts();
       Toast.show({
         type: 'success',
         text1: 'Success',
         text2: 'Product marked as out of stock.',
       });
     } catch (error) {
-      console.error('Error marking product as out of stock:', error);
       Toast.show({
         type: 'error',
         text1: 'Error',
@@ -94,18 +91,13 @@ const ShopkeeperProductList = () => {
                 <Text style={styles.itemDescription}>{item.description}</Text>
                 <Text style={styles.itemPrice}>Price: ₹{item.price}</Text>
               </View>
-              <TouchableOpacity
-                onPress={() => handleOutOfStock(item.id)}
-                style={styles.iconButton}
-              >
+              <TouchableOpacity onPress={() => handleOutOfStock(item.id)} style={styles.iconButton}>
                 <Icon name="delete" size={24} color="#dc3545" />
               </TouchableOpacity>
             </View>
           )}
           keyExtractor={(item) => item.id.toString()}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No products available.</Text>
-          }
+          ListEmptyComponent={<Text style={styles.emptyText}>No products available.</Text>}
         />
       )}
     </View>
