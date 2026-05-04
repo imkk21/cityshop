@@ -1,79 +1,99 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# CityShop 🛒
 
-# Getting Started
+CityShop is a comprehensive, dual-role mobile e-commerce platform built with **React Native** and **Supabase**. It provides a seamless experience for both regular customers (shoppers) and shopkeepers (vendors) to interact, manage products, and process orders in real-time.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+---
 
-## Step 1: Start the Metro Server
+## 🚀 Features
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+### For Customers (Shoppers)
+*   **Secure Authentication:** Sign up, log in, and manage profiles securely via Supabase Auth.
+*   **Product Browsing:** Browse a wide variety of products across multiple categories (Electronics, Clothing, Furniture, etc.).
+*   **Cart & Wishlist:** Add items to a shopping cart or save them to a wishlist for later.
+*   **Checkout & Payments:** Fully integrated checkout flow with **Razorpay** for seamless UPI and card payments.
+*   **Order Tracking:** View order history and receive real-time notifications.
 
-To start Metro, run the following command from the _root_ of your React Native project:
+### For Shopkeepers (Vendors)
+*   **Vendor Dashboard:** A dedicated interface to manage inventory and view store analytics.
+*   **Product Management:** Add, edit, and delete products. Upload product images directly to Supabase Storage.
+*   **Order Management:** Track incoming orders and manage fulfillment.
 
+### Security & Architecture
+*   **Row-Level Security (RLS):** Database operations are strictly scoped; users can only access and modify their own data, and shopkeepers can only manage their own products.
+*   **Environment Configuration:** Sensitive keys (Supabase URL, Anon Key, Razorpay Key) are securely managed via `.env` injection (`react-native-dotenv`).
+*   **Singleton Pattern:** Global Supabase client instance to prevent memory leaks and redundant network calls.
+
+---
+
+## 🛠️ Technology Stack
+
+*   **Frontend:** React Native, React Navigation
+*   **Backend & Database:** Supabase (PostgreSQL)
+*   **Authentication:** Supabase Auth (Email & OAuth ready)
+*   **Storage:** Supabase Storage Buckets
+*   **Payments:** Razorpay Checkout (`react-native-razorpay`)
+*   **State Management:** React Context API
+
+---
+
+## 💻 Getting Started
+
+### Prerequisites
+Make sure you have the following installed:
+*   [Node.js](https://nodejs.org/) (v18 or newer recommended)
+*   [Java Development Kit (JDK)](https://www.oracle.com/java/technologies/downloads/) (v17 or newer)
+*   [Android Studio](https://developer.android.com/studio) with Android SDK and an Emulator (e.g., Pixel 10 Pro)
+*   `adb` added to your system PATH.
+
+### 1. Clone the Repository
 ```bash
-# using npm
-npm start
-
-# OR using Yarn
-yarn start
+git clone https://github.com/imkk21/cityshop.git
+cd cityshop
 ```
 
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
+### 2. Install Dependencies
 ```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
+npm install
 ```
 
-### For iOS
-
-```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+### 3. Environment Setup
+Create a `.env` file in the root directory and add your keys:
+```env
+SUPABASE_URL=https://your-project-url.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+RAZORPAY_KEY=your-razorpay-test-key
+GOOGLE_WEB_CLIENT_ID=your-google-client-id
 ```
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+### 4. Database Setup
+A complete SQL restoration script is provided to set up the database schema and security policies.
+1. Go to your Supabase project dashboard -> **SQL Editor**.
+2. Copy the contents of `supabase_restore.sql` and run it.
+3. Go to **Storage** and create two public buckets: `product-images` and `profile-pictures`.
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+### 5. Run the Application
 
-## Step 3: Modifying your App
+Start the Metro Bundler:
+```bash
+npx react-native start --reset-cache
+```
 
-Now that you have successfully run the app, let's modify it.
+In a new terminal window, launch the app on your Android Emulator:
+```bash
+npx react-native run-android
+```
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+---
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+## 🔐 Security Notes
+*   **Never commit your `.env` file.** It is included in `.gitignore` by default.
+*   The `users` table utilizes Supabase Auth for passwords. Never store plaintext passwords in standard database tables.
+*   RLS policies must remain enabled in Supabase to secure the application.
 
-## Congratulations! :tada:
+---
 
-You've successfully run and modified your React Native App. :partying_face:
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome!
 
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## 📝 License
+This project is for educational and portfolio purposes.
