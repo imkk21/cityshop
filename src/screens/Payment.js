@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react'; // Add useCallback
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import RazorpayCheckout from 'react-native-razorpay';
+import { CONFIG } from '../utils/config';
 
 const Payment = () => {
-  const key = 'rzp_test_cmA2ecsVLey6PX';
+  const key = CONFIG.RAZORPAY_KEY;
   const [paymentAmount, setPaymentAmount] = useState(0);
 
   const [cartItems, setCartItems] = useState([

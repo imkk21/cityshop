@@ -9,13 +9,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { CONFIG } from '../utils/config';
-import { createClient } from '@supabase/supabase-js';
+import supabase from '../utils/supabase';
 import { AuthContext } from '../context/AuthContext';
 import Toast from 'react-native-toast-message';
 import { useFocusEffect } from '@react-navigation/native';
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 
 const ShopkeeperProductList = () => {
   const { user } = useContext(AuthContext);

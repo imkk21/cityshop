@@ -11,7 +11,7 @@ import {
   Image,
   SafeAreaView,
 } from 'react-native';
-import { createClient } from '@supabase/supabase-js';
+import supabase from '../utils/supabase';
 import { CONFIG } from '../utils/config';
 import { AuthContext } from '../context/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
@@ -19,8 +19,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import RazorpayCheckout from 'react-native-razorpay';
 import Toast from 'react-native-toast-message';
-
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
 const { width, height } = Dimensions.get('window');
 
@@ -30,7 +28,7 @@ const CartScreen = ({ navigation }) => {
   const { user } = useContext(AuthContext);
   const userId = user?.id;
 
-  const RAZORPAY_KEY = 'rzp_test_cmA2ecsVLey6PX';
+  const RAZORPAY_KEY = CONFIG.RAZORPAY_KEY;
 
   const fetchCartItems = useCallback(async () => {
     try {
@@ -194,7 +192,7 @@ const CartScreen = ({ navigation }) => {
   const initiatePayment = (paymentMethod) => {
     const options = {
       description: 'Payment for your order',
-      image: 'https://nbzuqafgapyfiqjjrsts.supabase.co/storage/v1/object/public/product-images//logo.jpeg',
+      image: `${CONFIG.SUPABASE_URL}/storage/v1/object/public/product-images//logo.jpeg`,
       currency: 'INR',
       key: RAZORPAY_KEY,
       amount: total * 100,

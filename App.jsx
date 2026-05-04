@@ -23,6 +23,7 @@ import WishlistScreen from './src/screens/WishlistScreen';
 import Settings from './src/screens/Settings';
 import Notifications from './src/screens/Notifications';
 import Payment from './src/screens/Payment';
+import OrderSuccessScreen from './src/screens/OrderSuccessScreen';
 
 const Stack = createStackNavigator();
 
@@ -115,6 +116,11 @@ const App = () => {
             name="Payment" 
             component={Payment} 
             options={{ headerShown: true, title: 'Payment' }}
+          />
+          <Stack.Screen 
+            name="OrderSuccess" 
+            component={OrderSuccessScreen} 
+            options={{ headerShown: false }} 
           />
         </Stack.Navigator>
       </NavigationContainer>

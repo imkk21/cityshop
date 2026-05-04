@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useContext, useCallback } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import { createClient } from "@supabase/supabase-js";
-import { CONFIG } from '../utils/config';
+import supabase from '../utils/supabase';
 import { AuthContext } from '../context/AuthContext';
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 
 const NotificationScreen = () => {
   const { user } = useContext(AuthContext); 

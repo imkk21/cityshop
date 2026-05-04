@@ -12,8 +12,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { createClient } from '@supabase/supabase-js';
-import { CONFIG } from '../utils/config';
+import supabase from '../utils/supabase';
 import { AuthContext } from '../context/AuthContext';
 import CustomHeader from '../context/CustomHeader'; // Updated import path
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -21,7 +20,7 @@ import Toast from 'react-native-toast-message';
 import LottieView from 'lottie-react-native';
 import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
@@ -273,14 +272,9 @@ const HomeScreen = ({ navigation }) => {
   // Loading animation
   if (loading) {
     return (
-      // <LinearGradient
-      //   colors={['#93C572', '#4A90E2']}
-      //   start={{ x: 0, y: 0 }}
-      //   end={{ x: 2, y: 1 }}
-      //   style={styles.loadingContainer}
-      // >
-        <ActivityIndicator size="large" color="#FFFFFF" />
-      // </LinearGradient>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="rgb(2, 12, 28)" />
+      </View>
     );
   }
 

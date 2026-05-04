@@ -14,10 +14,9 @@ import * as Animatable from 'react-native-animatable';
 import LinearGradient from 'react-native-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { createClient } from '@supabase/supabase-js';
-import { CONFIG } from '../utils/config';
+import supabase from '../utils/supabase';
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -123,7 +122,7 @@ const SignUpScreen = ({ navigation }) => {
         last_name: lastName,
         email,
         phone,
-        password,
+        // NOTE: Password is NOT stored here — Supabase Auth handles password hashing securely
         dob: dob.toISOString().split('T')[0], // Convert Date to YYYY-MM-DD
         terms_accepted: termsAccepted,
       }]);

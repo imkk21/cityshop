@@ -9,13 +9,12 @@ import {
   StyleSheet,
   Dimensions
 } from 'react-native';
-import { createClient } from '@supabase/supabase-js';
-import { CONFIG } from '../utils/config';
+import supabase from '../utils/supabase';
 import { AuthContext } from '../context/AuthContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 const { width } = Dimensions.get('window');
 const cardWidth = width / 2 - 20;
 

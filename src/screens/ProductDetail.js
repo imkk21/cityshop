@@ -1,12 +1,11 @@
 import React, { useContext } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import { AuthContext } from '../context/AuthContext'; // Import AuthContext
-import { createClient } from '@supabase/supabase-js';
-import Icon from 'react-native-vector-icons/Ionicons'; // Import Icon from react-native-vector-icons
-import { CONFIG } from '../utils/config';
+import supabase from '../utils/supabase';
 import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+import Icon from 'react-native-vector-icons/Ionicons';
+
 
 const ProductDetail = ({ route }) => {
   const { product } = route.params;

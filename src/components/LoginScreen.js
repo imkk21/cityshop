@@ -13,14 +13,13 @@ import {
   ImageBackground,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import { createClient } from '@supabase/supabase-js';
-import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
+import supabase from '../utils/supabase';
 import { CONFIG } from '../utils/config';
 import { AuthContext } from '../context/AuthContext';
+import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome'; // For hide/show password icon
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -46,7 +45,7 @@ const LoginScreen = ({ navigation }) => {
   useEffect(() => {
     GoogleSignin.configure({
       scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-      webClientId: '488144373941-m9qpl00hlkl9h3uu7pv2ppp08194qteb.apps.googleusercontent.com',
+      webClientId: CONFIG.GOOGLE_WEB_CLIENT_ID,
     });
   }, []);
 

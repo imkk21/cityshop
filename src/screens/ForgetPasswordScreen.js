@@ -11,10 +11,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { createClient } from '@supabase/supabase-js';
-import { CONFIG } from '../utils/config';
+import supabase from '../utils/supabase';
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 
 const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');

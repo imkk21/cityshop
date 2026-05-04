@@ -11,13 +11,12 @@ import {
   RefreshControl,
   Animated,
 } from 'react-native';
-import { createClient } from '@supabase/supabase-js';
-import { CONFIG } from '../utils/config'; // Adjust the path as needed
+import supabase from '../utils/supabase';
 import { AuthContext } from '../context/AuthContext'; // Import AuthContext
 import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
 import CustomHeader from '../context/CustomHeader'; // Import your CustomHeader component
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 const { width, height } = Dimensions.get('window');
 
 const CategoryScreen = ({ navigation }) => {

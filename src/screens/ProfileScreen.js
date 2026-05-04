@@ -14,13 +14,13 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { createClient } from '@supabase/supabase-js';
-import { CONFIG } from '../utils/config';
+import supabase from '../utils/supabase';
+import { getMimeType } from '../utils/imageUtils';
 import { AuthContext } from '../context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Import Icon library
 import Toast from 'react-native-toast-message'; // Import Toast
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 
 const ProfileScreen = () => {
   const route = useRoute();
@@ -58,27 +58,8 @@ const ProfileScreen = () => {
     }
   }, [user, fetchUserDetails]);
 
-  // Function to get MIME type based on file extension
-  const getMimeType = (fileName) => {
-    const extension = fileName.split('.').pop().toLowerCase();
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'bmp':
-        return 'image/bmp';
-      case 'webp':
-        return 'image/webp';
-      case 'svg':
-        return 'image/svg+xml';
-      default:
-        return 'application/octet-stream'; // Fallback MIME type
-    }
-  };
+  // getMimeType is now imported from '../utils/imageUtils'
+
 
   // Handle image upload
   const handleImageUpload = async () => {

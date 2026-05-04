@@ -2,12 +2,11 @@ import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Share, Image } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { AuthContext } from '../context/AuthContext';
-import { createClient } from '@supabase/supabase-js';
-import { CONFIG } from '../utils/config';
+import supabase from '../utils/supabase';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 
 const Menu = ({ navigation }) => {
   const { user, logout } = useContext(AuthContext);
@@ -211,7 +210,7 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 14,
-    color: '#gray', // White text for better visibility on gradient
+    color: 'gray', // Gray text for version info
     textAlign: 'center',
     marginTop: 'auto',
     paddingVertical: 16,

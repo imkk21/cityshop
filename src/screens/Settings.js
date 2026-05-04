@@ -2,11 +2,10 @@ import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { AuthContext } from '../context/AuthContext';
-import { createClient } from '@supabase/supabase-js';
-import { CONFIG } from '../utils/config';
+import supabase from '../utils/supabase';
 import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 
 const Settings = ({ navigation }) => {
   const { user } = useContext(AuthContext);

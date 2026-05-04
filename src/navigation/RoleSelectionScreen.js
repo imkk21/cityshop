@@ -152,7 +152,6 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backdropFilter: 'blur(10px)',
     shadowColor: '#000',
     shadowOpacity: 0.2,
     shadowRadius: 10,

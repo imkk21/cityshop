@@ -13,13 +13,13 @@ import {
 import { Picker } from '@react-native-picker/picker'; // Import Picker
 import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
-import { createClient } from '@supabase/supabase-js';
-import { CONFIG } from '../utils/config';
+import supabase from '../utils/supabase';
+import { getMimeType } from '../utils/imageUtils';
 import { AuthContext } from '../context/AuthContext';
 import Toast from 'react-native-toast-message'; // Import Toast
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Import Icon library
 
-const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
 
 const ShopkeeperDashboardScreen = () => {
   const [productName, setProductName] = useState('');
@@ -43,26 +43,8 @@ const ShopkeeperDashboardScreen = () => {
     { label: 'Toys', value: 'Toys' },
   ];
 
-  const getMimeType = (fileName) => {
-    const extension = fileName.split('.').pop().toLowerCase();
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'bmp':
-        return 'image/bmp';
-      case 'webp':
-        return 'image/webp';
-      case 'svg':
-        return 'image/svg+xml';
-      default:
-        return 'application/octet-stream';
-    }
-  };
+  // getMimeType is now imported from '../utils/imageUtils'
+
 
   const handleImageUpload = async () => {
     try {
